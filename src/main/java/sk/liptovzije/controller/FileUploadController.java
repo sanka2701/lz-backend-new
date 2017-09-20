@@ -1,11 +1,15 @@
 package sk.liptovzije.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
@@ -46,14 +50,27 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
+    @RequestMapping(value = "/show/{filename:.+}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImage(@PathVariable String filename) throws IOException {
+
+//        ClassPathResource imgFile = new ClassPathResource("image/sid.jpg");
+        Resource imgFile = storageService.loadAsResource(filename);
+        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(bytes);
+    }
+
     @PostMapping("/up")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,  RedirectAttributes redirectAttributes) {
-
+    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file) {
         storageService.store(file);
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
+        System.out.println("Filename :" + file.getOriginalFilename());
 
-        return "redirect:/test";
+        String serverFileLocation = "/show/" + file.getOriginalFilename();
+
+        return new ResponseEntity<>(serverFileLocation , HttpStatus.OK);
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)
