@@ -19,7 +19,8 @@ import sk.liptovzije.utils.StorageProperties;
 import java.util.Arrays;
 
 @SpringBootApplication
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+//@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@EnableAutoConfiguration
 @EnableConfigurationProperties({StorageProperties.class})
 public class Application {
 
@@ -48,8 +49,8 @@ public class Application {
         };
     }
 
-//    @Bean
-//    public HibernateJpaSessionFactoryBean sessionFactory() {
-//        return new HibernateJpaSessionFactoryBean();
-//    }
+    @Bean
+    public HibernateJpaSessionFactoryBean sessionFactory() {
+        return new HibernateJpaSessionFactoryBean();
+    }
 }

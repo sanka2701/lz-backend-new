@@ -3,38 +3,62 @@ package sk.liptovzije.model.DO;
 import io.jsonwebtoken.impl.TextCodec;
 import sk.liptovzije.model.DTO.UserCredentialsDTO;
 
+import javax.persistence.*;
 import java.security.SecureRandom;
 
 /**
  * Created by jan.husenica on 8/31/2016.
  */
+@Entity
+@Table(name = "credentials")
 public class UserCredentialsDO {
     static final String charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "password")
     private String password;
+
+    @Column(name = "salt")
     private String salt;
 
-    public UserCredentialsDO(UserCredentialsDTO credentials){
-        this(credentials.getUsername(), credentials.getPassword());
+    public UserCredentialsDO() {
     }
 
-    public UserCredentialsDO(UserCredentialsDTO credentials, String salt){
-        this(credentials.getUsername(), credentials.getPassword(), salt);
-    }
-
-    public UserCredentialsDO(String username, String password, String salt) {
+    public UserCredentialsDO(Long userId, String username, String password, String salt) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.salt = salt;
         this.hashPassword();
     }
 
-    public UserCredentialsDO(String username, String password ) {
+    public UserCredentialsDO(Long userId, String username, String password ) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.hashPasswordWithNewSalt();
-        int a =5;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getUsername() {
@@ -85,15 +109,17 @@ public class UserCredentialsDO {
 
         UserCredentialsDO that = (UserCredentialsDO) o;
 
-        if (!username.equals(that.username)) return false;
-        if (!password.equals(that.password)) return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
         return salt != null ? salt.equals(that.salt) : that.salt == null;
     }
 
     @Override
     public int hashCode() {
-        int result = username.hashCode();
-        result = 31 * result + password.hashCode();
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (username != null ? username.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (salt != null ? salt.hashCode() : 0);
         return result;
     }

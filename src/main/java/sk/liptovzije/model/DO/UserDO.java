@@ -28,15 +28,6 @@ public class UserDO implements Serializable {
 	@Convert(converter = LocalDatePersistenceConverter.class)
 	private LocalDate createdDate;
 
-	@Column(name = "username")
-	private String username;
-
-	@Column(name = "password")
-	private String password;
-
-	@Column(name = "salt")
-	private String salt;
-
 	@Column(name = "role")
 	private String role;
 
@@ -46,14 +37,9 @@ public class UserDO implements Serializable {
 		private String lastName;
 		private String email;
 		private LocalDate createdDate;
-		private String username;
-		private String password;
-		private String salt;
 		private String role;
 
-		public Builder(String username, String password){
-			this.username = username;
-			this.password = password;
+		public Builder(){
 		}
 
 		public Builder id(Long id){
@@ -76,10 +62,6 @@ public class UserDO implements Serializable {
 			this.createdDate = createdDate;
 			return this;
 		}
-		public Builder salt(String salt){
-			this.salt = salt;
-			return this;
-		}
 		public Builder role(String role){
 			this.role = role;
 			return this;
@@ -93,20 +75,13 @@ public class UserDO implements Serializable {
 		this.role = "user";
 	}
 
-	public UserDO(String role, UserCredentialsDO credentials){
-		this.role = role;
-		this.setCredentials(credentials);
-	}
-
 	private UserDO(Builder builder) {
 	  	this.id = builder.id;
 		this.firstName = builder.firstName;
 		this.lastName = builder.lastName;
 		this.email = builder.email;
 		this.createdDate = builder.createdDate;
-		this.salt = builder.salt;
 		this.role = builder.role;
-		this.setCredentials(new UserCredentialsDO(builder.username, builder.password));
 	}
 
 	public long getId() {
@@ -149,30 +124,6 @@ public class UserDO implements Serializable {
 		this.createdDate = createdDate;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-//	public void setUsername(String username) {
-//		this.username = username;
-//	}
-
-	public String getPassword() {
-		return password;
-	}
-
-//	public void setPassword(String password) {
-//		this.password = password;
-//	}
-
-	public String getSalt() {
-		return salt;
-	}
-
-	public void setSalt(String salt) {
-		this.salt = salt;
-	}
-
 	public String getRole() {
 		return role;
 	}
@@ -181,47 +132,41 @@ public class UserDO implements Serializable {
 		this.role = role;
 	}
 
-	public UserCredentialsDO getCredentials() {
-		return new UserCredentialsDO(username, password, salt);
-	}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-	public void setCredentials(UserCredentialsDO credentials) {
-		this.username = credentials.getUsername();
-		this.password = credentials.getPassword();
-		this.salt = credentials.getSalt();
-	}
+		UserDO userDO = (UserDO) o;
 
-	private void hashPassword() {
-		
+		if (id != null ? !id.equals(userDO.id) : userDO.id != null) return false;
+		if (firstName != null ? !firstName.equals(userDO.firstName) : userDO.firstName != null) return false;
+		if (lastName != null ? !lastName.equals(userDO.lastName) : userDO.lastName != null) return false;
+		if (email != null ? !email.equals(userDO.email) : userDO.email != null) return false;
+		if (createdDate != null ? !createdDate.equals(userDO.createdDate) : userDO.createdDate != null) return false;
+		return role != null ? role.equals(userDO.role) : userDO.role == null;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		int result = id != null ? id.hashCode() : 0;
+		result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
+		result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
+		result = 31 * result + (email != null ? email.hashCode() : 0);
+		result = 31 * result + (createdDate != null ? createdDate.hashCode() : 0);
+		result = 31 * result + (role != null ? role.hashCode() : 0);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof UserDO))
-			return false;
-		UserDO other = (UserDO) obj;
-        return !(email != other.email || username != other.email);
-    }
-
-	@Override
 	public String toString() {
-		return new StringBuilder()
-				.append("id: ").append(id)
-				.append(" firstName: ").append(firstName)
-				.append(" lastName: ").append(lastName)
-				.append(" email: ").append(email)
-				.toString();
+		return "UserDO{" +
+				"id=" + id +
+				", firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				", email='" + email + '\'' +
+				", createdDate=" + createdDate +
+				", role='" + role + '\'' +
+				'}';
 	}
 }

@@ -8,11 +8,9 @@ import java.util.List;
 
 
 public interface IUserService {
-	UserDO getByUsername(String username);
-
 	UserDO getById(long id);
 
-	void saveUser(UserDO user);
+	Long saveUser(UserDO user);
 	
 	void updateUser(UserDO user);
 	

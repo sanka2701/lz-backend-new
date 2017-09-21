@@ -2,15 +2,14 @@ package sk.liptovzije.service.impl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import sk.liptovzije.model.DO.UserDO;
-import sk.liptovzije.model.Response;
 import sk.liptovzije.service.IJwtService;
 
 import javax.xml.bind.DatatypeConverter;
 import java.util.Date;
 
-@Component
+@Service
 public class JwtServiceImpl implements IJwtService{
     private static final String ISSUER = "http://liptovzije.sk";
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
@@ -32,7 +31,6 @@ public class JwtServiceImpl implements IJwtService{
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .setIssuer(ISSUER)
-                .setSubject(user.getCredentials().getUsername())
                 .signWith(SIGNATURE_ALGORITHM, key)
                 .claim("role", user.getRole());
 

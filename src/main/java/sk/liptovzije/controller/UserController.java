@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sk.liptovzije.model.DO.UserCredentialsDO;
 import sk.liptovzije.model.DO.UserDO;
 import sk.liptovzije.model.DTO.UserCredentialsDTO;
 import sk.liptovzije.model.DTO.UserDTO;
 import sk.liptovzije.model.Response;
 import sk.liptovzije.service.IAuthenticationService;
+import sk.liptovzije.service.ICredentialService;
 import sk.liptovzije.service.IJwtService;
 import sk.liptovzije.service.IUserService;
 
@@ -19,6 +21,9 @@ public class UserController {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private ICredentialService credentialService;
 
     @Autowired
     private IAuthenticationService authenticatorService;
@@ -52,15 +57,16 @@ public class UserController {
 
         log.debug("Attemting to register new user: ", newUser);
 
-        UserDO user = userService.getByUsername(newUser.getUsername());
+        UserCredentialsDO userCredentials = credentialService.getByUsername(newUser.getUsername());
 
-        log.debug("User creation result: " + (user != null ? "CREATED" : "USER ALREADY EXISTS"));
+        log.debug("User creation result: " + (userCredentials != null ? "USER ALREADY EXISTS" : "USER WILL BE CREATED"));
 
-        if(user != null) {
+        if(userCredentials != null) {
             status = HttpStatus.BAD_REQUEST;
             message = "status.usernameInUse";
         } else {
-            userService.saveUser(newUser.toDo());
+            Long id = userService.saveUser(newUser.toDo());
+            credentialService.save(new UserCredentialsDO(id, newUser.getUsername(), newUser.getPassword()));
             status = HttpStatus.OK;
             message = "status.userCreated";
         }
@@ -68,29 +74,24 @@ public class UserController {
     }
 
     @RequestMapping(value = "/user/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<Response<?>> login(@RequestBody UserCredentialsDTO credentials) {
-        Response<Object> response = new Response<>();
+    public ResponseEntity<Response<UserDTO>> login(@RequestBody UserCredentialsDTO credentials) {
+        Response<UserDTO> response = new Response<>();
         HttpStatus status;
 
-        UserDO user = userService.getByUsername(credentials.getUsername());
+        UserCredentialsDO loadedCredentials = credentialService.getByUsername(credentials.getUsername());
 
-        if(user == null) {
-            response.setData("user_not_found");
+        if(loadedCredentials == null) {
+            response.setMessage("status.userNotFound");
             status =  HttpStatus.BAD_REQUEST;
-        } else if (!authenticatorService.validateCredentials(user.getCredentials(), credentials)) {
-            response.setData("password_invalid");
+        } else if (!authenticatorService.validateCredentials(loadedCredentials, credentials)) {
+            response.setMessage("status.passwordInvalid");
             status = HttpStatus.UNAUTHORIZED;
         } else {
+            UserDO user = userService.getById(loadedCredentials.getUserId());
             response.setJwt(jwtService.sign(user));
+            response.setData(new UserDTO(user));
             status = HttpStatus.OK;
         }
-
-//        if (user != null && authenticatorService.validateCredentials(user.getCredentials(), credentials)) {
-//            response.setJwt(jwtService.sign(user));
-//            status = HttpStatus.OK;
-//        } else {
-//            status = HttpStatus.UNAUTHORIZED;
-//        }
 
         return new ResponseEntity<>(response, status);
     }

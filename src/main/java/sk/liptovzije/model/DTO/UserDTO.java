@@ -13,18 +13,20 @@ public class UserDTO {
     private String address;
     private String email;
     private LocalDate createdDate;
+    private String role;
+
     private String username;
     private String password;
-    private String role;
 
     public static class Builder {
         private String firstName;
         private String lastName;
         private String email;
         private LocalDate createdDate;
+        private String role;
+
         private String username;
         private String password;
-        private String role;
 
         public Builder(String username, String password){
             this.username = username;
@@ -75,8 +77,6 @@ public class UserDTO {
         this.lastName   = user.getLastName();
         this.email      = user.getEmail();
         this.createdDate= user.getCreatedDate();
-        this.username   = user.getUsername();
-        this.password   = user.getPassword();
         this.role       = user.getRole();
     }
 
@@ -87,7 +87,6 @@ public class UserDTO {
         result.setEmail(email);
         result.setCreatedDate(createdDate);
         result.setRole(role);
-        result.setCredentials(new UserCredentialsDO(username, password));
 
         return result;
     }
