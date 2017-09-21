@@ -1,7 +1,8 @@
 package sk.liptovzije.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +13,6 @@ import sk.liptovzije.model.Response;
 import sk.liptovzije.service.IAuthenticationService;
 import sk.liptovzije.service.IJwtService;
 import sk.liptovzije.service.IUserService;
-
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class UserController {
@@ -27,24 +26,12 @@ public class UserController {
     @Autowired
     private IJwtService jwtService;
 
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
     @RequestMapping(path = "/test")
-    public String test(){
-        System.out.println("BREKEKEBR");
-        return "Hello Kurva";
-    }
-
-    @RequestMapping(path = "/test2")
-    public ResponseEntity<String> test2( String str){
-        System.out.println("MUHEHE got: " + str);
-
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Access-Control-Allow-Origin", "*");
-//        headers.add("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
-//        headers.add("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token");
-
-        String message = "Hello World";
-
-        return new ResponseEntity<>(message, /*headers,*/ HttpStatus.OK);
+    public @ResponseBody String test(){
+        log.debug("Reached testing endpoint");
+        return "Hello World";
     }
 
 //    @RequestMapping(value= "/**", method=RequestMethod.OPTIONS)
@@ -57,36 +44,53 @@ public class UserController {
 //        response.addHeader("Access-Control-Max-Age", "3600");
 //    }
 
+
     @RequestMapping(path = "/user/create" , method= RequestMethod.POST)
     public ResponseEntity<String> register(@RequestBody UserDTO newUser){
         HttpStatus status;
         String message;
+
+        log.debug("Attemting to register new user: ", newUser);
+
         UserDO user = userService.getByUsername(newUser.getUsername());
 
-        if(user == null) {
+        log.debug("User creation result: " + (user != null ? "CREATED" : "USER ALREADY EXISTS"));
+
+        if(user != null) {
+            status = HttpStatus.BAD_REQUEST;
+            message = "status.usernameInUse";
+        } else {
             userService.saveUser(newUser.toDo());
             status = HttpStatus.OK;
             message = "status.userCreated";
-        } else {
-            status = HttpStatus.BAD_REQUEST;
-            message = "status.usernameInUse";
         }
         return new ResponseEntity<>(message, status);
     }
 
     @RequestMapping(value = "/user/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<Response<UserDO>> login(@RequestBody UserCredentialsDTO credentials) {
-
-        Response<UserDO> response = null;
+    public ResponseEntity<Response<?>> login(@RequestBody UserCredentialsDTO credentials) {
+        Response<Object> response = new Response<>();
         HttpStatus status;
 
         UserDO user = userService.getByUsername(credentials.getUsername());
-        if (user != null && authenticatorService.validCredentials(user.getCredentials(), credentials)) {
-            response = jwtService.sign(user);
-            status = HttpStatus.OK;
-        } else {
+
+        if(user == null) {
+            response.setData("user_not_found");
+            status =  HttpStatus.BAD_REQUEST;
+        } else if (!authenticatorService.validateCredentials(user.getCredentials(), credentials)) {
+            response.setData("password_invalid");
             status = HttpStatus.UNAUTHORIZED;
+        } else {
+            response.setJwt(jwtService.sign(user));
+            status = HttpStatus.OK;
         }
+
+//        if (user != null && authenticatorService.validateCredentials(user.getCredentials(), credentials)) {
+//            response.setJwt(jwtService.sign(user));
+//            status = HttpStatus.OK;
+//        } else {
+//            status = HttpStatus.UNAUTHORIZED;
+//        }
 
         return new ResponseEntity<>(response, status);
     }

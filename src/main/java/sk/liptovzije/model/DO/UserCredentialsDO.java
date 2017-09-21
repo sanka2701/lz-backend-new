@@ -8,32 +8,33 @@ import java.security.SecureRandom;
 /**
  * Created by jan.husenica on 8/31/2016.
  */
-public class UserCredentials {
+public class UserCredentialsDO {
     static final String charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     private String username;
     private String password;
-    private String saltedPassword;
     private String salt;
 
-    public UserCredentials(UserCredentialsDTO credentials){
+    public UserCredentialsDO(UserCredentialsDTO credentials){
         this(credentials.getUsername(), credentials.getPassword());
     }
 
-    public UserCredentials(String username, String password ) {
-        this.username = username;
-        this.password = password;
-        this.hashPasswordWithNewSalt();
-    }
-
-    public UserCredentials(UserCredentialsDTO credentials, String salt){
+    public UserCredentialsDO(UserCredentialsDTO credentials, String salt){
         this(credentials.getUsername(), credentials.getPassword(), salt);
     }
 
-    public UserCredentials(String username, String password, String salt) {
+    public UserCredentialsDO(String username, String password, String salt) {
         this.username = username;
         this.password = password;
         this.salt = salt;
+        this.hashPassword();
+    }
+
+    public UserCredentialsDO(String username, String password ) {
+        this.username = username;
+        this.password = password;
+        this.hashPasswordWithNewSalt();
+        int a =5;
     }
 
     public String getUsername() {
@@ -44,10 +45,6 @@ public class UserCredentials {
         return password;
     }
 
-    public String getSaltedPassword() {
-        return saltedPassword;
-    }
-
     public String getSalt() {
         return salt;
     }
@@ -56,13 +53,12 @@ public class UserCredentials {
         try {
 //            MessageDigest digest = MessageDigest.getInstance("SHA-256");
 //            byte[] hash = digest.digest((saltedPass).getBytes("UTF-8"));
-            String saltedPass = salt != null ? salt + password : password;
-            String hash = TextCodec.BASE64.encode(saltedPass.getBytes("UTF-8"));
-            String resovled = new String(TextCodec.BASE64.decode(hash));
+            String saltedPass = salt + password;
+            this.password = TextCodec.BASE64.encode(saltedPass.getBytes("UTF-8"));;
 
-            System.out.println("saltedPass: " + saltedPass + "\nresolved: " + resovled + "\nequals: " + saltedPass.equals(resovled));
+//            String resovled = new String(TextCodec.BASE64.decode(hash));
+//            System.out.println("saltedPass: " + saltedPass + "\nresolved: " + resovled + "\nequals: " + saltedPass.equals(resovled));
 
-            this.saltedPassword = hash;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,16 +83,18 @@ public class UserCredentials {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserCredentials that = (UserCredentials) o;
+        UserCredentialsDO that = (UserCredentialsDO) o;
 
         if (!username.equals(that.username)) return false;
-        return saltedPassword.equals(that.saltedPassword);
+        if (!password.equals(that.password)) return false;
+        return salt != null ? salt.equals(that.salt) : that.salt == null;
     }
 
     @Override
     public int hashCode() {
         int result = username.hashCode();
-        result = 31 * result + saltedPassword.hashCode();
+        result = 31 * result + password.hashCode();
+        result = 31 * result + (salt != null ? salt.hashCode() : 0);
         return result;
     }
 }

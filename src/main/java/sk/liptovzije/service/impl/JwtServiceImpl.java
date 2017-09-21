@@ -18,7 +18,7 @@ public class JwtServiceImpl implements IJwtService{
     private static final String SIGN = "Bearer";
     private static final Long TTL = 600000L;
 
-    public Response<UserDO> sign(UserDO user){
+    public String sign(UserDO user){
         long nowMillis = System.currentTimeMillis();
         long expMillis = nowMillis + TTL;    // expiration set for 10 minutes
 
@@ -39,7 +39,7 @@ public class JwtServiceImpl implements IJwtService{
         String jwt = builder.compact();
         System.out.println("JWT: " + jwt);
 
-        return new Response<>(user, jwt);
+        return jwt;
     }
 
     public boolean verify(String jwt) {

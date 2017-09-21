@@ -40,13 +40,73 @@ public class UserDO implements Serializable {
 	@Column(name = "role")
 	private String role;
 
+	public static class Builder {
+		private Long id;
+		private String firstName;
+		private String lastName;
+		private String email;
+		private LocalDate createdDate;
+		private String username;
+		private String password;
+		private String salt;
+		private String role;
+
+		public Builder(String username, String password){
+			this.username = username;
+			this.password = password;
+		}
+
+		public Builder id(Long id){
+			this.id = id;
+			return this;
+		}
+		public Builder firstName(String firstName){
+			this.firstName = firstName;
+			return this;
+		}
+		public Builder lastName(String lastName){
+			this.lastName = lastName;
+			return this;
+		}
+		public Builder email(String email){
+			this.email = email;
+			return this;
+		}
+		public Builder createdDate(LocalDate createdDate){
+			this.createdDate = createdDate;
+			return this;
+		}
+		public Builder salt(String salt){
+			this.salt = salt;
+			return this;
+		}
+		public Builder role(String role){
+			this.role = role;
+			return this;
+		}
+		public UserDO build(){
+			return new UserDO(this);
+		}
+	}
+
 	public UserDO() {
 		this.role = "user";
 	}
 
-	public UserDO(String role, UserCredentials credentials){
+	public UserDO(String role, UserCredentialsDO credentials){
 		this.role = role;
 		this.setCredentials(credentials);
+	}
+
+	private UserDO(Builder builder) {
+	  	this.id = builder.id;
+		this.firstName = builder.firstName;
+		this.lastName = builder.lastName;
+		this.email = builder.email;
+		this.createdDate = builder.createdDate;
+		this.salt = builder.salt;
+		this.role = builder.role;
+		this.setCredentials(new UserCredentialsDO(builder.username, builder.password));
 	}
 
 	public long getId() {
@@ -93,17 +153,17 @@ public class UserDO implements Serializable {
 		return username;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+//	public void setUsername(String username) {
+//		this.username = username;
+//	}
 
 	public String getPassword() {
 		return password;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+//	public void setPassword(String password) {
+//		this.password = password;
+//	}
 
 	public String getSalt() {
 		return salt;
@@ -121,14 +181,18 @@ public class UserDO implements Serializable {
 		this.role = role;
 	}
 
-	public UserCredentials getCredentials() {
-		return new UserCredentials(username, password, salt);
+	public UserCredentialsDO getCredentials() {
+		return new UserCredentialsDO(username, password, salt);
 	}
 
-	public void setCredentials(UserCredentials credentials) {
+	public void setCredentials(UserCredentialsDO credentials) {
 		this.username = credentials.getUsername();
-		this.password = credentials.getSaltedPassword();
+		this.password = credentials.getPassword();
 		this.salt = credentials.getSalt();
+	}
+
+	private void hashPassword() {
+		
 	}
 
 	@Override

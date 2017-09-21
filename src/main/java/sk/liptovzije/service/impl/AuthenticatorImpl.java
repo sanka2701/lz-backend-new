@@ -1,7 +1,7 @@
 package sk.liptovzije.service.impl;
 
 import org.springframework.stereotype.Component;
-import sk.liptovzije.model.DO.UserCredentials;
+import sk.liptovzije.model.DO.UserCredentialsDO;
 import sk.liptovzije.model.DTO.UserCredentialsDTO;
 import sk.liptovzije.service.IAuthenticationService;
 /**
@@ -11,9 +11,9 @@ import sk.liptovzije.service.IAuthenticationService;
 public class AuthenticatorImpl implements IAuthenticationService {
 
     @Override
-    public boolean validCredentials(UserCredentials original, UserCredentialsDTO checkedDTO) {
-        UserCredentials checked = new UserCredentials(checkedDTO, original.getSalt());
+    public boolean validateCredentials(UserCredentialsDO original, UserCredentialsDTO checkedDTO) {
+        UserCredentialsDO received = new UserCredentialsDO(checkedDTO, original.getSalt());
 
-        return original.equals(checked);
+        return original.equals(received);
     }
 }

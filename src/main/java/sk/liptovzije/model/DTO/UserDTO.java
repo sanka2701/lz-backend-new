@@ -2,7 +2,7 @@ package sk.liptovzije.model.DTO;
 
 import org.joda.time.LocalDate;
 import sk.liptovzije.model.DO.UserDO;
-import sk.liptovzije.model.DO.UserCredentials;
+import sk.liptovzije.model.DO.UserCredentialsDO;
 
 /**
  * Created by husenica on 17.9.16.
@@ -17,8 +17,57 @@ public class UserDTO {
     private String password;
     private String role;
 
+    public static class Builder {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private LocalDate createdDate;
+        private String username;
+        private String password;
+        private String role;
+
+        public Builder(String username, String password){
+            this.username = username;
+            this.password = password;
+        }
+
+        public Builder firstName(String firstName){
+            this.firstName = firstName;
+            return this;
+        }
+        public Builder lastName(String lastName){
+            this.lastName = lastName;
+            return this;
+        }
+        public Builder email(String email){
+            this.email = email;
+            return this;
+        }
+        public Builder createdDate(LocalDate createdDate){
+            this.createdDate = createdDate;
+            return this;
+        }
+        public Builder role(String role){
+            this.role = role;
+            return this;
+        }
+        public UserDTO build(){
+            return new UserDTO(this);
+        }
+    }
+
     public UserDTO() {
         this.role = "user";
+    }
+
+    private UserDTO(Builder builder) {
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.email = builder.email;
+        this.createdDate = builder.createdDate;
+        this.username = builder.username;
+        this.password = builder.password;
+        this.role = builder.role;
     }
 
     public UserDTO (UserDO user) {
@@ -38,7 +87,7 @@ public class UserDTO {
         result.setEmail(email);
         result.setCreatedDate(createdDate);
         result.setRole(role);
-        result.setCredentials(new UserCredentials(username, password));
+        result.setCredentials(new UserCredentialsDO(username, password));
 
         return result;
     }
