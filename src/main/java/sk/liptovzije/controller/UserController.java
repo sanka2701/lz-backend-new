@@ -39,17 +39,6 @@ public class UserController {
         return "Hello World";
     }
 
-//    @RequestMapping(value= "/**", method=RequestMethod.OPTIONS)
-//    public void corsHeaders(HttpServletResponse response) {
-//        System.out.println("POJEBANY CORS!!!");
-//
-//        response.addHeader("Access-Control-Allow-Origin", "*");
-//        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//        response.addHeader("Access-Control-Allow-Headers", "origin, content-type, accept, x-requested-with");
-//        response.addHeader("Access-Control-Max-Age", "3600");
-//    }
-
-
     @RequestMapping(path = "/user/create" , method= RequestMethod.POST)
     public ResponseEntity<String> register(@RequestBody UserDTO newUser){
         HttpStatus status;
