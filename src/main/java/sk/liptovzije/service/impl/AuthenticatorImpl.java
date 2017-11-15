@@ -9,7 +9,7 @@ import sk.liptovzije.service.IAuthenticationService;
  */
 @Service
 public class AuthenticatorImpl implements IAuthenticationService {
-
+//todo: spring security took care of this - reevaluate usage
     @Override
     public boolean validateCredentials(UserCredentialsDO originalPassword, UserCredentialsDTO checkedPasswordDTO) {
         UserCredentialsDO received = checkedPasswordDTO.toDo(originalPassword.getUserId(), originalPassword.getSalt());

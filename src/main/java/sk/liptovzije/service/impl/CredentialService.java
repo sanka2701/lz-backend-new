@@ -5,12 +5,16 @@ import com.mysema.query.jpa.hibernate.HibernateQuery;
 import com.mysema.query.jpa.hibernate.HibernateUpdateClause;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.model.DO.QUserCredentialsDO;
 import sk.liptovzije.model.DO.UserCredentialsDO;
 import sk.liptovzije.service.ICredentialService;
 
 import javax.transaction.Transactional;
+import java.util.Collections;
 
 @Service
 @Transactional
@@ -18,6 +22,16 @@ public class CredentialService implements ICredentialService {
 
     @Autowired
     private SessionFactory sessionFactory;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserCredentialsDO credentials = this.getByUsername(username);
+        if(credentials == null) {
+            throw new UsernameNotFoundException(username);
+        }
+
+        return new User(credentials.getUsername(), credentials.getPassword(), Collections.emptyList());
+    }
 
     @Override
     public Long save(UserCredentialsDO credentials) {
