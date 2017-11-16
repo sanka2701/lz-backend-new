@@ -25,7 +25,8 @@ public class CredentialService implements ICredentialService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserCredentialsDO credentials = this.getByUsername(username);
+//        UserCredentialsDO credentials = this.getByUsername(username);
+        UserCredentialsDO credentials = new UserCredentialsDO(null, "sanka", "heslo");
         if(credentials == null) {
             throw new UsernameNotFoundException(username);
         }

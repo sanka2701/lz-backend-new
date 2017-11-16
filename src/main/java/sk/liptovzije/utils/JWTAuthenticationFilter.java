@@ -27,7 +27,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private AuthenticationManager authenticationManager;
 
     public JWTAuthenticationFilter(AuthenticationManager authManager) {
-        this.authenticationManager = authenticationManager;
+        this.setFilterProcessesUrl("/user/authenticate");
+        this.authenticationManager = authManager;
     }
 
     @Override
@@ -59,6 +60,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+        int a =5 ;
     }
 
     @Override
