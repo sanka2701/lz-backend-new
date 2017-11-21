@@ -5,6 +5,7 @@ import com.mysema.query.jpa.hibernate.HibernateQuery;
 import com.mysema.query.jpa.hibernate.HibernateUpdateClause;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,7 +32,7 @@ public class CredentialService implements ICredentialService {
             throw new UsernameNotFoundException(username);
         }
 
-        return new User(credentials.getUsername(), credentials.getPassword(), Collections.emptyList());
+        return new User(credentials.getUsername(), credentials.getPassword(), Collections.emptyList() );
     }
 
     @Override

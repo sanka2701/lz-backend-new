@@ -9,13 +9,14 @@ import sk.liptovzije.service.IJwtService;
 import javax.xml.bind.DatatypeConverter;
 import java.util.Date;
 
+import static sk.liptovzije.security.SecurityConstants.ISSUER;
+import static sk.liptovzije.security.SecurityConstants.SECRET;
+import static sk.liptovzije.security.SecurityConstants.TTL;
+
 @Service
 public class JwtServiceImpl implements IJwtService{
-    private static final String ISSUER = "http://liptovzije.sk";
+
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
-    private static final String SECRET = "H7PP2i+cxNQrDQOxq7KhhKuQX9HkvbsVpzrwMzyLRAQ=";
-    private static final String SIGN = "Bearer";
-    private static final Long TTL = 600000L;
 
     public String sign(UserDO user){
         long nowMillis = System.currentTimeMillis();

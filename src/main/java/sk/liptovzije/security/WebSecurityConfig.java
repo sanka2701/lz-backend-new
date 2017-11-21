@@ -1,10 +1,11 @@
-package sk.liptovzije.utils;
+package sk.liptovzije.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,8 +30,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/user/create").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+//                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+
+                .addFilter(new JWTAuthenticationFilter(authManager()))
+                .addFilter(new JWTAuthorizationFilter(authManager()))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //                .and()
 //            .formLogin()
@@ -51,6 +55,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .password("pass")
 //                .roles("ADMIN");
         auth.userDetailsService(credentialService);
+    }
+
+    @Bean
+    AuthenticationManager authManager(){
+        return new LZAuthenticationManager();
     }
 
     //todo reevalute with usage of cors filter usage

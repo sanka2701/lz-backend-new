@@ -1,4 +1,4 @@
-package sk.liptovzije.utils;
+package sk.liptovzije.security;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,10 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 
-public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
+import static sk.liptovzije.security.SecurityConstants.HEADER_STRING;
+import static sk.liptovzije.security.SecurityConstants.TOKEN_PREFIX;
 
-    public static final String TOKEN_PREFIX = "Bearer ";
-    public static final String HEADER_STRING = "Authorization";
+public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     public JWTAuthorizationFilter(AuthenticationManager authManager) {
         super(authManager);
