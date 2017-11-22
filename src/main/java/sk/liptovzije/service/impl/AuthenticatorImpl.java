@@ -11,8 +11,8 @@ import sk.liptovzije.service.IAuthenticationService;
 public class AuthenticatorImpl implements IAuthenticationService {
 //todo: spring security took care of this - reevaluate usage
     @Override
-    public boolean validateCredentials(UserCredentialsDO originalPassword, UserCredentialsDTO checkedPasswordDTO) {
-        UserCredentialsDO received = checkedPasswordDTO.toDo(originalPassword.getUserId(), originalPassword.getSalt());
-        return originalPassword.equals(received);
+    public boolean validateCredentials(UserCredentialsDO stored, UserCredentialsDTO receivedDTO) {
+        UserCredentialsDO received = receivedDTO.toDo(stored.getUserId(), stored.getSalt());
+        return stored.equals(received);
     }
 }

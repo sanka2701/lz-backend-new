@@ -24,7 +24,7 @@ public class UserDO implements Serializable {
 	@Column(name = "email")
 	private String email;
 
-	@Column(name = "create_date")
+	@Column(name = "created_date")
 	@Convert(converter = LocalDatePersistenceConverter.class)
 	private LocalDate createdDate;
 
