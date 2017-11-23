@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.model.DO.UserDO;
+import sk.liptovzije.model.DTO.UserDTO;
 import sk.liptovzije.service.IJwtService;
 
 import javax.xml.bind.DatatypeConverter;
@@ -17,6 +18,10 @@ import static sk.liptovzije.security.SecurityConstants.TTL;
 public class JwtServiceImpl implements IJwtService{
 
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
+
+    public String sign(UserDTO user) {
+        return this.sign(user.toDo());
+    }
 
     public String sign(UserDO user){
         long nowMillis = System.currentTimeMillis();
@@ -53,6 +58,7 @@ public class JwtServiceImpl implements IJwtService{
             System.out.println("Role: " + claims.get("role"));
         } catch (SignatureException e) {
             System.out.println("SECURITY v <>");
+            e.printStackTrace();
             return false;
         }
 

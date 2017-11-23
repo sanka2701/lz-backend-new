@@ -5,15 +5,20 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import sk.liptovzije.model.DTO.UserCredentialsDTO;
+import sk.liptovzije.model.DTO.UserDTO;
+import sk.liptovzije.service.IJwtService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collections;
 
 import static sk.liptovzije.security.SecurityConstants.HEADER_STRING;
@@ -22,30 +27,33 @@ import static sk.liptovzije.security.SecurityConstants.TOKEN_PREFIX;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-
+    private IJwtService jwtService;
     private AuthenticationManager authenticationManager;
 
-    public JWTAuthenticationFilter(AuthenticationManager authManager) {
+    public JWTAuthenticationFilter(AuthenticationManager authManager, IJwtService jwtService) {
         this.setFilterProcessesUrl("/user/authenticate");
         this.authenticationManager = authManager;
+        this.jwtService            = jwtService;
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException {
         try {
             // todo: because of CORS
-            if (httpServletRequest.getHeader(ORIGIN_HEADER) != null) {
-                String origin = httpServletRequest.getHeader(ORIGIN_HEADER);
-                httpServletResponse.addHeader("Access-Control-Allow-Origin", origin);
-                httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
-                httpServletResponse.addHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
-            }
-            if (httpServletRequest.getMethod().equals("OPTIONS")) {
-                httpServletResponse.getWriter().print("OK");
-                httpServletResponse.getWriter().flush();
-                return null;
-            }
+//            if (httpServletRequest.getHeader(ORIGIN_HEADER) != null) {
+//                String origin = httpServletRequest.getHeader(ORIGIN_HEADER);
+//                httpServletResponse.addHeader("Access-Control-Allow-Origin", origin);
+//                httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//                httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
+//                httpServletResponse.addHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
+//            }
+//            if (httpServletRequest.getMethod().equals("OPTIONS")) {
+//                httpServletResponse.getWriter().print("OK");
+//                httpServletResponse.getWriter().flush();
+//                return null;
+//            }
+            //todo: test purrposes only -> may even remove apache maven repository
+            String marshalledXml = org.apache.commons.io.IOUtils.toString(httpServletRequest.getInputStream());
 
             UserCredentialsDTO creds = new ObjectMapper().readValue(httpServletRequest.getInputStream(), UserCredentialsDTO.class);
 
@@ -74,16 +82,24 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
+        UserDTO user = (UserDTO) auth.getDetails();
+        String token = jwtService.sign(user);
+        String userXmlString = "";
 
-        //todo create token
-        String token = "JWT token";
-        User tmp = (User)auth.getPrincipal();
-//        String token = Jwts.builder()
-//                .setSubject(((User) auth.getPrincipal()).getUsername())
-//                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-//                .signWith(SignatureAlgorithm.HS512, SECRET.getBytes())
-//                .compact();
+        try{
+            StringWriter stringWriter = new StringWriter();
+            JAXBContext jaxbContext = JAXBContext.newInstance(UserDTO.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+            jaxbMarshaller.marshal(user, stringWriter);
+            userXmlString = stringWriter.toString();
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
 
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        res.getWriter().write(userXmlString);
+        res.getWriter().flush();
+        res.getWriter().close();
     }
 }

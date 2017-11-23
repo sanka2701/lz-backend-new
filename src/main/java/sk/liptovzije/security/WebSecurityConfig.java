@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sk.liptovzije.service.ICredentialService;
+import sk.liptovzije.service.IJwtService;
 
 @Configuration
 @EnableWebSecurity
@@ -23,6 +24,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ICredentialService credentialService;
+
+    @Autowired
+    private IJwtService jwtService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -33,7 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
 //                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
 
-                .addFilter(new JWTAuthenticationFilter(authManager()))
+                .addFilter(new JWTAuthenticationFilter(authManager(), jwtService))
                 .addFilter(new JWTAuthorizationFilter(authManager()))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //                .and()

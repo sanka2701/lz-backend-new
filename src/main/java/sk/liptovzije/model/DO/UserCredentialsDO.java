@@ -39,15 +39,14 @@ public class UserCredentialsDO {
         this.username = username;
         this.password = password;
         this.salt = salt;
-//        this.hashPassword();
+        this.hashPassword();
     }
 
     public UserCredentialsDO(Long userId, String username, String password ) {
         this.userId = userId;
         this.username = username;
         this.password = password;
-        // todo reevaulata
-//        this.hashPasswordWithNewSalt();
+        this.hashPasswordWithNewSalt();
     }
 
     public Long getId() {

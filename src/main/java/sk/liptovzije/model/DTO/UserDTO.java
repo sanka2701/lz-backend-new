@@ -4,10 +4,14 @@ import org.joda.time.LocalDate;
 import sk.liptovzije.model.DO.UserDO;
 import sk.liptovzije.model.DO.UserCredentialsDO;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Created by husenica on 17.9.16.
  */
+@XmlRootElement
 public class UserDTO {
+    private Long   id;
     private String firstName;
     private String lastName;
     private String address;
@@ -19,6 +23,7 @@ public class UserDTO {
     private String password;
 
     public static class Builder {
+        private Long   id;
         private String firstName;
         private String lastName;
         private String email;
@@ -33,6 +38,10 @@ public class UserDTO {
             this.password = password;
         }
 
+        public Builder id(Long id){
+            this.id = id;
+            return this;
+        }
         public Builder firstName(String firstName){
             this.firstName = firstName;
             return this;
@@ -63,25 +72,28 @@ public class UserDTO {
     }
 
     private UserDTO(Builder builder) {
-        this.firstName = builder.firstName;
-        this.lastName = builder.lastName;
-        this.email = builder.email;
+        this.id          = builder.id;
+        this.firstName   = builder.firstName;
+        this.lastName    = builder.lastName;
+        this.email       = builder.email;
         this.createdDate = builder.createdDate;
-        this.username = builder.username;
-        this.password = builder.password;
-        this.role = builder.role;
+        this.username    = builder.username;
+        this.password    = builder.password;
+        this.role        = builder.role;
     }
 
     public UserDTO (UserDO user) {
-        this.firstName  = user.getFirstName();
-        this.lastName   = user.getLastName();
-        this.email      = user.getEmail();
-        this.createdDate= user.getCreatedDate();
-        this.role       = user.getRole();
+        this.id          = user.getId();
+        this.firstName   = user.getFirstName();
+        this.lastName    = user.getLastName();
+        this.email       = user.getEmail();
+        this.createdDate = user.getCreatedDate();
+        this.role        = user.getRole();
     }
 
     public UserDO toDo() {
         UserDO result = new UserDO();
+        result.setId(id);
         result.setFirstName(firstName);
         result.setLastName(lastName);
         result.setEmail(email);
@@ -89,6 +101,14 @@ public class UserDTO {
         result.setRole(role);
 
         return result;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
