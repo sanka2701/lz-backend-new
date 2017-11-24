@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by husenica on 17.9.16.
  */
-@XmlRootElement
 public class UserDTO {
     private Long   id;
     private String firstName;

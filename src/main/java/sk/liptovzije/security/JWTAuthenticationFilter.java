@@ -40,20 +40,21 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException {
         try {
             // todo: because of CORS
-//            if (httpServletRequest.getHeader(ORIGIN_HEADER) != null) {
-//                String origin = httpServletRequest.getHeader(ORIGIN_HEADER);
-//                httpServletResponse.addHeader("Access-Control-Allow-Origin", origin);
-//                httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//                httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
-//                httpServletResponse.addHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
-//            }
-//            if (httpServletRequest.getMethod().equals("OPTIONS")) {
-//                httpServletResponse.getWriter().print("OK");
-//                httpServletResponse.getWriter().flush();
-//                return null;
-//            }
+            if (httpServletRequest.getHeader(ORIGIN_HEADER) != null) {
+                String origin = httpServletRequest.getHeader(ORIGIN_HEADER);
+                httpServletResponse.addHeader("Access-Control-Allow-Origin", origin);
+                httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
+                httpServletResponse.addHeader("Access-Control-Expose-Headers", "Authorization");
+                httpServletResponse.addHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
+            }
+            if (httpServletRequest.getMethod().equals("OPTIONS")) {
+                httpServletResponse.getWriter().print("OK");
+                httpServletResponse.getWriter().flush();
+                return null;
+            }
             //todo: test purrposes only -> may even remove apache maven repository
-            String marshalledXml = org.apache.commons.io.IOUtils.toString(httpServletRequest.getInputStream());
+            //String marshalledXml = org.apache.commons.io.IOUtils.toString(httpServletRequest.getInputStream());
 
             UserCredentialsDTO creds = new ObjectMapper().readValue(httpServletRequest.getInputStream(), UserCredentialsDTO.class);
 
@@ -82,23 +83,14 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
+
         UserDTO user = (UserDTO) auth.getDetails();
+        ObjectMapper mapper = new ObjectMapper();
+        String userJsonString = mapper.writeValueAsString(user);
         String token = jwtService.sign(user);
-        String userXmlString = "";
-
-        try{
-            StringWriter stringWriter = new StringWriter();
-            JAXBContext jaxbContext = JAXBContext.newInstance(UserDTO.class);
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-            jaxbMarshaller.marshal(user, stringWriter);
-            userXmlString = stringWriter.toString();
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
 
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
-        res.getWriter().write(userXmlString);
+        res.getWriter().write(userJsonString);
         res.getWriter().flush();
         res.getWriter().close();
     }
