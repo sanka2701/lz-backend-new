@@ -62,26 +62,33 @@ public class UserController {
         return new ResponseEntity<>(message, status);
     }
 
-    @RequestMapping(value = "/user/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<Response<UserDTO>> login(@RequestBody UserCredentialsDTO credentials) {
-        Response<UserDTO> response = new Response<>();
-        HttpStatus status;
+    @RequestMapping(path = "/user/{id}", method = RequestMethod.GET)
+    public ResponseEntity<UserDTO> getSingleUser(@PathVariable Long id){
+        UserDTO user = new UserDTO(userService.getById(id));
 
-        UserCredentialsDO loadedCredentials = credentialService.getByUsername(credentials.getUsername());
-
-        if(loadedCredentials == null) {
-            response.setMessage("status.userNotFound");
-            status =  HttpStatus.BAD_REQUEST;
-        } else if (!authenticatorService.validateCredentials(loadedCredentials, credentials)) {
-            response.setMessage("status.passwordInvalid");
-            status = HttpStatus.UNAUTHORIZED;
-        } else {
-            UserDO user = userService.getById(loadedCredentials.getUserId());
-            response.setJwt(jwtService.sign(user));
-            response.setData(new UserDTO(user));
-            status = HttpStatus.OK;
-        }
-
-        return new ResponseEntity<>(response, status);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
+
+//    @RequestMapping(value = "/user/authenticate", method = RequestMethod.POST)
+//    public ResponseEntity<Response<UserDTO>> login(@RequestBody UserCredentialsDTO credentials) {
+//        Response<UserDTO> response = new Response<>();
+//        HttpStatus status;
+//
+//        UserCredentialsDO loadedCredentials = credentialService.getByUsername(credentials.getUsername());
+//
+//        if(loadedCredentials == null) {
+//            response.setMessage("status.userNotFound");
+//            status =  HttpStatus.BAD_REQUEST;
+//        } else if (!authenticatorService.validateCredentials(loadedCredentials, credentials)) {
+//            response.setMessage("status.passwordInvalid");
+//            status = HttpStatus.UNAUTHORIZED;
+//        } else {
+//            UserDO user = userService.getById(loadedCredentials.getUserId());
+//            response.setJwt(jwtService.sign(user));
+//            response.setData(new UserDTO(user));
+//            status = HttpStatus.OK;
+//        }
+//
+//        return new ResponseEntity<>(response, status);
+//    }
 }
