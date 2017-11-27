@@ -4,6 +4,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import sk.liptovzije.service.IJwtService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,8 +19,11 @@ import static sk.liptovzije.security.SecurityConstants.TOKEN_PREFIX;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-    public JWTAuthorizationFilter(AuthenticationManager authManager) {
+    private IJwtService jwtService;
+
+    public JWTAuthorizationFilter(AuthenticationManager authManager, IJwtService jwtService) {
         super(authManager);
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -55,10 +59,11 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_STRING);
+        String token = request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, "");
         if (token != null) {
             String username = "whatever";
-            //todo validate
+            jwtService.verify(token);
+            //todo validate and add username to jwt token
 //            String username = Jwts.parser()
 //                    .setSigningKey(SECRET.getBytes())
 //                    .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))

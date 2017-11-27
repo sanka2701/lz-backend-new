@@ -38,7 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
 
                 .addFilter(new JWTAuthenticationFilter(authManager(), jwtService))
-                .addFilter(new JWTAuthorizationFilter(authManager()))
+                .addFilter(new JWTAuthorizationFilter(authManager(), jwtService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //                .and()
 //            .formLogin()
