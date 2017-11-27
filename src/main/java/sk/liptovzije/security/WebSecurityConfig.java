@@ -32,11 +32,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http/*.cors().and()*/.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/user/create").permitAll()
+                .antMatchers(HttpMethod.GET , "/user/*").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.POST, "/event/create").permitAll()
+                .antMatchers(HttpMethod.GET , "/event/*").permitAll()
+//                .antMatchers(HttpMethod.POST, "/event/create").hasAnyAuthority("ADMIN", "USER")
+//                .antMatchers(HttpMethod.GET, "/event/*").hasAnyAuthority("ADMIN", "USER")
                 .anyRequest().authenticated()
                 .and()
-//                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-//                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
-
                 .addFilter(new JWTAuthenticationFilter(authManager(), jwtService))
                 .addFilter(new JWTAuthorizationFilter(authManager(), jwtService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

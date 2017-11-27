@@ -2,8 +2,9 @@ package sk.liptovzije.service.impl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import sk.liptovzije.model.DO.UserDO;
 import sk.liptovzije.model.DTO.UserDTO;
 import sk.liptovzije.service.IJwtService;
 
@@ -18,12 +19,9 @@ import static sk.liptovzije.security.SecurityConstants.TTL;
 public class JwtServiceImpl implements IJwtService{
 
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
+    private static final Logger log = LoggerFactory.getLogger(JwtServiceImpl.class);
 
-    public String sign(UserDTO user) {
-        return this.sign(user.toDo());
-    }
-
-    public String sign(UserDO user){
+    public String sign(UserDTO user){
         long nowMillis = System.currentTimeMillis();
         long expMillis = nowMillis + TTL;    // expiration set for 10 minutes
 
@@ -34,6 +32,7 @@ public class JwtServiceImpl implements IJwtService{
 
         JwtBuilder builder = Jwts.builder()
                 .setId(Long.toString(user.getId()))
+                .setSubject(user.getUsername())
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .setIssuer(ISSUER)
@@ -46,22 +45,25 @@ public class JwtServiceImpl implements IJwtService{
         return jwt;
     }
 
-    public boolean verify(String jwt) {
+    public Claims verify(String jwt) {
+        Claims claims = null;
+
         try {
-            Claims claims = Jwts.parser()
+            claims = Jwts.parser()
                     .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET))
                     .parseClaimsJws(jwt).getBody();
-            System.out.println("ID: " + claims.getId());
-            System.out.println("Subject: " + claims.getSubject());
-            System.out.println("Issuer: " + claims.getIssuer());
-            System.out.println("Expiration: " + claims.getExpiration());
-            System.out.println("Role: " + claims.get("role"));
+
+            log.debug("ID: " + claims.getId());
+            log.debug("Subject: " + claims.getSubject());
+            log.debug("Issuer: " + claims.getIssuer());
+            log.debug("Expiration: " + claims.getExpiration());
+            log.debug("Role: " + claims.get("role"));
+
+            return claims;
         } catch (SignatureException e) {
             System.out.println("SECURITY v <>");
             e.printStackTrace();
-            return false;
+            return null;
         }
-
-        return true;
     }
 }

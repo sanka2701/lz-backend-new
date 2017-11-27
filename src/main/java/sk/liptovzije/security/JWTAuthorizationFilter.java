@@ -1,7 +1,11 @@
 package sk.liptovzije.security;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import sk.liptovzije.service.IJwtService;
@@ -11,11 +15,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
-import static sk.liptovzije.security.SecurityConstants.HEADER_STRING;
-import static sk.liptovzije.security.SecurityConstants.ORIGIN_HEADER;
-import static sk.liptovzije.security.SecurityConstants.TOKEN_PREFIX;
+import static sk.liptovzije.security.SecurityConstants.*;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
@@ -61,17 +65,15 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, "");
         if (token != null) {
-            String username = "whatever";
-            jwtService.verify(token);
-            //todo validate and add username to jwt token
-//            String username = Jwts.parser()
-//                    .setSigningKey(SECRET.getBytes())
-//                    .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
-//                    .getBody()
-//                    .getSubject();
+            Claims claims = jwtService.verify(token);
+            if (claims != null) {
+                String username = claims.getSubject();
+                String role = (String)claims.get("role");
 
-            if (username != null) {
-                return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+                List<GrantedAuthority> grantedAuths = new ArrayList<>();
+                grantedAuths.add(new SimpleGrantedAuthority(role.toUpperCase()));
+
+                return new UsernamePasswordAuthenticationToken(username, null, grantedAuths);
             }
             return null;
         }

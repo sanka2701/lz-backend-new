@@ -42,9 +42,10 @@ public class LZAuthenticationManager implements AuthenticationManager {
         }
 
         UserDTO user = new UserDTO(userService.getById(loadedCredentials.getUserId()));
+        user.setUsername(loadedCredentials.getUsername());
 
         List<GrantedAuthority> grantedAuths = new ArrayList<>();
-        grantedAuths.add(new SimpleGrantedAuthority(user.getRole()));
+        grantedAuths.add(new SimpleGrantedAuthority(user.getRole().toUpperCase()));
 
         auth = new UsernamePasswordAuthenticationToken(username, null, grantedAuths);
         auth.setDetails(user);
