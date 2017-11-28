@@ -30,7 +30,7 @@ public class FileUploadController {
         this.storageService = storageService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/files")
     public String listUploadedFiles(Model model) throws IOException {
 
         model.addAttribute("files", storageService.loadAll().map(
@@ -50,7 +50,7 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
-    @RequestMapping(value = "/show/{filename:.+}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    @RequestMapping(value = "/files/show/{filename:.+}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getImage(@PathVariable String filename) throws IOException {
 
 //        ClassPathResource imgFile = new ClassPathResource("image/sid.jpg");
@@ -63,12 +63,12 @@ public class FileUploadController {
                 .body(bytes);
     }
 
-    @PostMapping("/up")
+    @PostMapping("/files/upload")
     public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file) {
         storageService.store(file);
         System.out.println("Filename :" + file.getOriginalFilename());
 
-        String serverFileLocation = "/show/" + file.getOriginalFilename();
+        String serverFileLocation = "files/show/" + file.getOriginalFilename();
 
         return new ResponseEntity<>(serverFileLocation , HttpStatus.OK);
     }

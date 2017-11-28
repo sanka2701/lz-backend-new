@@ -46,6 +46,7 @@ public class JwtServiceImpl implements IJwtService{
     }
 
     public Claims verify(String jwt) {
+        //todo : consider creating new model holding user id, role and username for purpose of keeping JWTS data
         Claims claims = null;
 
         try {
@@ -53,11 +54,11 @@ public class JwtServiceImpl implements IJwtService{
                     .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET))
                     .parseClaimsJws(jwt).getBody();
 
-            log.debug("ID: " + claims.getId());
-            log.debug("Subject: " + claims.getSubject());
-            log.debug("Issuer: " + claims.getIssuer());
-            log.debug("Expiration: " + claims.getExpiration());
-            log.debug("Role: " + claims.get("role"));
+//            log.debug("ID: " + claims.getId());
+//            log.debug("Subject: " + claims.getSubject());
+//            log.debug("Issuer: " + claims.getIssuer());
+//            log.debug("Expiration: " + claims.getExpiration());
+//            log.debug("Role: " + claims.get("role"));
 
             return claims;
         } catch (SignatureException e) {

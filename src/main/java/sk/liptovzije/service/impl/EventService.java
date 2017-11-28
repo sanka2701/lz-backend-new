@@ -3,10 +3,15 @@ package sk.liptovzije.service.impl;
 import com.mysema.query.jpa.hibernate.HibernateQuery;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import sk.liptovzije.model.DO.EventDO;
 import sk.liptovzije.model.DO.QEventDO;
 import sk.liptovzije.service.IEventService;
 
+import javax.transaction.Transactional;
+
+@Service
+@Transactional
 public class EventService implements IEventService {
 
     @Autowired

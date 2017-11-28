@@ -2,13 +2,7 @@ package sk.liptovzije.model.DTO;
 
 import org.joda.time.LocalDate;
 import sk.liptovzije.model.DO.UserDO;
-import sk.liptovzije.model.DO.UserCredentialsDO;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-/**
- * Created by husenica on 17.9.16.
- */
 public class UserDTO {
     private Long   id;
     private String firstName;
