@@ -31,6 +31,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http/*.cors().and()*/.csrf().disable().authorizeRequests()
+                //todo fix ant matchers when static context serving is done
+                .antMatchers("/img/**").permitAll()
                 .antMatchers("/files/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/user/create").permitAll()
                 .antMatchers(HttpMethod.GET , "/user/*").hasAuthority("ADMIN")
