@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * Created by jan.husenica on 4/4/2017.
  */
-public class LocalDateToJsJsonDateSerializer extends JsonSerializer<LocalDateTime>{
+public class LocalDateToJsJsonDateSerializer extends JsonSerializer<LocalDateTime> {
     private static DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     @Override
