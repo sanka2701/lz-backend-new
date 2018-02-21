@@ -49,7 +49,7 @@ public class UsersApi {
                 registerParam.getEmail(),
                 registerParam.getUsername(),
                 encryptService.encrypt(registerParam.getPassword()));
-        userService.save(user);
+
         UserData userData = userService.save(user).map(User::toData).get();
         return ResponseEntity.status(201).body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
     }

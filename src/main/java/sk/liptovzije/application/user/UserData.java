@@ -16,4 +16,10 @@ public class UserData {
     private String lastName;
     private LocalDate createdDate;
     private String role;
+
+    public UserData(Long id, String email, String username) {
+        this.id = id;
+        this.email = email;
+        this.username = username;
+    }
 }

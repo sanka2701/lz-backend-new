@@ -1,5 +1,7 @@
 package sk.liptovzije.application.user;
 
+import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Email;
 import org.joda.time.LocalDate;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
@@ -9,7 +11,9 @@ import javax.persistence.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode
 @Table(name = "users")
 public class User {
     @Id

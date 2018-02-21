@@ -10,8 +10,6 @@ public interface IUserService {
 
     Optional<User> update(User user);
 
-    Optional<User> findById(String id);
-
     Optional<User> findById(Long id);
 
     Optional<User> findByUsername(String username);
