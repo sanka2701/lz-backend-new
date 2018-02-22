@@ -1,4 +1,4 @@
-package sk.liptovzije.utils.errors;
+package sk.liptovzije.api.errors;
 
 public class FieldErrorResource {
     private String resource;

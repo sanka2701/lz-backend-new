@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import sk.liptovzije.api.security.WebSecurityConfig;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.utils.errors.CustomizeExceptionHandler;
+import sk.liptovzije.api.errors.CustomizeExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Optional;

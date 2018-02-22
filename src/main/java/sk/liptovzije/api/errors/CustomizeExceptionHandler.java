@@ -1,6 +1,7 @@
-package sk.liptovzije.utils.errors;
+package sk.liptovzije.api.errors;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,8 +12,6 @@ import sk.liptovzije.utils.exception.InvalidRequestException;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @RestControllerAdvice
 public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
@@ -33,7 +32,7 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseEntity<Object> result = handleExceptionInternal(e, error, headers, UNPROCESSABLE_ENTITY, request);
-        return result;
+        ResponseEntity<Object> res = handleExceptionInternal(e, error, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+        return res;
     }
 }

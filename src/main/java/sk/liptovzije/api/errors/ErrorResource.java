@@ -1,4 +1,4 @@
-package sk.liptovzije.utils.errors;
+package sk.liptovzije.api.errors;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 
