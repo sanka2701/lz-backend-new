@@ -1,9 +1,13 @@
 package sk.liptovzije.api.errors;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
 
+@JsonSerialize(using = ErrorResourceSerializer.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @lombok.Getter
 @JsonRootName("errors")
 public class ErrorResource {

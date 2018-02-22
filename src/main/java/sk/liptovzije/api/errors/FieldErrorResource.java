@@ -1,5 +1,10 @@
 package sk.liptovzije.api.errors;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Getter
 public class FieldErrorResource {
     private String resource;
     private String field;

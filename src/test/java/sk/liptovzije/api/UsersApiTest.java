@@ -132,14 +132,13 @@ public class UsersApiTest {
         Long id = 0L;
         String email = "john@jacob.com";
         String username = "johnjacob";
+        String password = "123";
 
-        when(userService.findByUsername(eq(username))).thenReturn(Optional.of(new User(
-            email, username, "123"
-        )));
-        when(userService.findByEmail(any())).thenReturn(Optional.empty());
-
-        User user = new User(email, username, "");
+        User user = new User(email, username, password);
         user.setId(id);
+
+        when(userService.findByUsername(eq(username))).thenReturn(Optional.of(user));
+        when(userService.findByEmail(any())).thenReturn(Optional.empty());
 
         ObjectMapper mapper = new ObjectMapper();
         String param = mapper.writeValueAsString(user);
@@ -156,16 +155,17 @@ public class UsersApiTest {
 
     @Test
     public void should_show_error_for_duplicated_email() throws Exception {
-        Long id =0L;
+        Long id = 0L;
         String email = "john@jacob.com";
         String username = "johnjacob2";
+        String password = "123";
 
         when(userService.findByEmail(eq(email))).thenReturn(Optional.of(new User(
-            email, username, "123"
+            email, "johnny", "pass"
         )));
         when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
 
-        User user = new User(email, username, "");
+        User user = new User(email, username, password);
         user.setId(id);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -218,13 +218,14 @@ public class UsersApiTest {
         String username = "johnjacob2";
         String password = "123";
 
-        User user = new User(email, username, password);
+        LoginParam login = new LoginParam(email, password);
+
+        User user = new User(email, username, "otherPassword");
+        user.setId(id);
 
         when(userService.findByEmail(eq(email))).thenReturn(Optional.of(user));
-        when(userService.findById(eq(id))).thenReturn(Optional.of(user));
 
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
+        String param = new ObjectMapper().writeValueAsString(login);
 
         given()
             .contentType("application/json")

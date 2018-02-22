@@ -1,5 +1,6 @@
 package sk.liptovzije.api;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Email;
@@ -58,7 +59,7 @@ public class UsersApi {
     public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam, BindingResult bindingResult) {
         Optional<User> optional = userService.findByEmail(loginParam.getEmail());
         if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
-            UserData userData = userService.findById(optional.get().getId()).map(User::toData).get();
+            UserData userData = optional.map(User::toData).get();
             return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
         } else {
             bindingResult.rejectValue("password", "INVALID", "invalid email or password");
@@ -92,6 +93,7 @@ public class UsersApi {
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 class LoginParam {
     @NotBlank(message = "can't be empty")
     @Email(message = "should be an email")
@@ -102,6 +104,7 @@ class LoginParam {
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 class RegisterParam {
     @NotBlank(message = "can't be empty")
     @Email(message = "should be an email")
