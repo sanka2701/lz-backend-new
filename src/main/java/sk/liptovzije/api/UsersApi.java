@@ -57,7 +57,7 @@ public class UsersApi {
 
     @RequestMapping(path = "/users/login", method = POST)
     public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam, BindingResult bindingResult) {
-        Optional<User> optional = userService.findByEmail(loginParam.getEmail());
+        Optional<User> optional = userService.findByUsername(loginParam.getUsername());
         if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
             UserData userData = optional.map(User::toData).get();
             return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
@@ -96,8 +96,7 @@ public class UsersApi {
 @AllArgsConstructor
 class LoginParam {
     @NotBlank(message = "can't be empty")
-    @Email(message = "should be an email")
-    private String email;
+    private String username;
     @NotBlank(message = "can't be empty")
     private String password;
 }
@@ -106,7 +105,6 @@ class LoginParam {
 @NoArgsConstructor
 @AllArgsConstructor
 class RegisterParam {
-    @NotBlank(message = "can't be empty")
     @Email(message = "should be an email")
     private String email;
     @NotBlank(message = "can't be empty")

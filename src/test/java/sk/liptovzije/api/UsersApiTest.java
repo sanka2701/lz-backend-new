@@ -13,21 +13,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import sk.liptovzije.api.security.WebSecurityConfig;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.application.user.UserData;
 import sk.liptovzije.core.service.encrypt.NaiveEncryptService;
 import sk.liptovzije.core.service.jwt.IJwtService;
 import sk.liptovzije.core.service.user.IUserService;
 import sk.liptovzije.core.service.user.UserService;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,17 +52,17 @@ public class UsersApiTest {
         String username = "johnjacob";
         String password = "123";
 
-        when(jwtService.toToken(any())).thenReturn(password);
         User user = new User(email, username, password);
         user.setId(id);
 
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
+
+        when(jwtService.toToken(any())).thenReturn(password);
         when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
         when(userService.findByEmail(eq(email))).thenReturn(Optional.empty());
         when(userService.findById(eq(id))).thenReturn(Optional.of(user));
         when(userService.save(any())).thenReturn(Optional.of(user));
-
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
 
         given()
             .contentType("application/json")
@@ -83,16 +79,45 @@ public class UsersApiTest {
     }
 
     @Test
-    public void should_show_error_message_for_blank_username() throws Exception {
+    public void should_create_user_without_email_success() throws Exception {
         Long id = 0L;
-        String email = "john@jacob.com";
-        String username = "";
+        String username = "johnjacob";
+        String password = "123";
 
-        User user = new User(email, username, "");
+        User user = new User("", username, password);
         user.setId(id);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
+        RegisterParam registration = new RegisterParam("", username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
+
+        when(jwtService.toToken(any())).thenReturn(password);
+        when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
+        when(userService.findByEmail(any())).thenReturn(Optional.empty());
+        when(userService.findById(eq(id))).thenReturn(Optional.of(user));
+        when(userService.save(any())).thenReturn(Optional.of(user));
+
+        given()
+                .contentType("application/json")
+                .body(param)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(201)
+                .body("user.email", equalTo(""))
+                .body("user.username", equalTo(username))
+                .body("user.token", equalTo("123"));
+
+        verify(userService).save(any());
+    }
+
+    @Test
+    public void should_show_error_message_for_blank_username() throws Exception {
+        String email = "john@jacob.com";
+        String username = "";
+        String password = "123";
+
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
 
         given()
             .contentType("application/json")
@@ -105,16 +130,32 @@ public class UsersApiTest {
     }
 
     @Test
+    public void should_show_error_message_for_blank_password() throws Exception {
+        String email = "john@jacob.com";
+        String username = "johnjacob";
+        String password = "";
+
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
+
+        given()
+                .contentType("application/json")
+                .body(param)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(422)
+                .body("errors.password[0]", equalTo("can't be empty"));
+    }
+
+    @Test
     public void should_show_error_message_for_invalid_email() throws Exception {
-        Long id = 0L;
         String email = "johnxjacob.com";
         String username = "johnjacob";
+        String password = "123";
 
-        User user = new User(email, username, "");
-        user.setId(id);
-
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
 
         given()
             .contentType("application/json")
@@ -134,14 +175,14 @@ public class UsersApiTest {
         String username = "johnjacob";
         String password = "123";
 
-        User user = new User(email, username, password);
+        User user = new User("otherjohn@jacob.com", username, "321");
         user.setId(id);
+
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
 
         when(userService.findByUsername(eq(username))).thenReturn(Optional.of(user));
         when(userService.findByEmail(any())).thenReturn(Optional.empty());
-
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
 
         given()
             .contentType("application/json")
@@ -157,19 +198,17 @@ public class UsersApiTest {
     public void should_show_error_for_duplicated_email() throws Exception {
         Long id = 0L;
         String email = "john@jacob.com";
-        String username = "johnjacob2";
+        String username = "johnjacob";
         String password = "123";
 
-        when(userService.findByEmail(eq(email))).thenReturn(Optional.of(new User(
-            email, "johnny", "pass"
-        )));
-        when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
-
-        User user = new User(email, username, password);
+        User user = new User(email, "otherjohnjacob", "321");
         user.setId(id);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
+        RegisterParam registration = new RegisterParam(email, username, password);
+        String param = new ObjectMapper().writeValueAsString(registration);
+
+        when(userService.findByEmail(eq(email))).thenReturn(Optional.of(user));
+        when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
 
         given()
             .contentType("application/json")
@@ -191,11 +230,10 @@ public class UsersApiTest {
         User user = new User(email, username, password);
         user.setId(id);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String param = mapper.writeValueAsString(user);
+        LoginParam login = new LoginParam(username, password);
+        String param = new ObjectMapper().writeValueAsString(login);
 
-        when(userService.findByEmail(eq(email))).thenReturn(Optional.of(user));
-        when(userService.findById(eq(id))).thenReturn(Optional.of(user));
+        when(userService.findByUsername(eq(username))).thenReturn(Optional.of(user));
         when(jwtService.toToken(any())).thenReturn("123");
 
         given()
@@ -218,14 +256,13 @@ public class UsersApiTest {
         String username = "johnjacob2";
         String password = "123";
 
-        LoginParam login = new LoginParam(email, password);
-
         User user = new User(email, username, "otherPassword");
         user.setId(id);
 
-        when(userService.findByEmail(eq(email))).thenReturn(Optional.of(user));
-
+        LoginParam login = new LoginParam(username, password);
         String param = new ObjectMapper().writeValueAsString(login);
+
+        when(userService.findByUsername(eq(username))).thenReturn(Optional.of(user));
 
         given()
             .contentType("application/json")
