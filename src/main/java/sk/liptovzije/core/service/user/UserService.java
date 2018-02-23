@@ -9,6 +9,9 @@ import sk.liptovzije.application.user.User;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -16,6 +19,8 @@ import java.util.Optional;
 public class UserService implements IUserService {
 //    @Autowired
 //    private SessionFactory sessionFactory;
+
+    List<User> usersRepo = new ArrayList<>();
 
     @Override
     public Optional<User> save(User user) {
@@ -26,11 +31,16 @@ public class UserService implements IUserService {
 //        }
 //
 //        return Optional.ofNullable(user);
-        return Optional.empty();
+        usersRepo.add(user);
+        return Optional.of(user);
     }
 
     @Override
     public Optional<User> update(User user) {
+        usersRepo.stream()
+                .filter(currentUser -> currentUser.getId().equals(user.getId()))
+                .forEach(currentUser -> currentUser = user);
+
         return Optional.empty();
     }
 
@@ -44,17 +54,22 @@ public class UserService implements IUserService {
 //                .uniqueResult(user);
 //
 //        return Optional.ofNullable(result);
-        return Optional.empty();
+       return usersRepo.stream()
+               .filter(user -> user.getId().equals(id))
+               .findFirst();
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        Optional<User> res = Optional.empty();
-        return res;
+        return usersRepo.stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return Optional.empty();
+        return usersRepo.stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
     }
 }
