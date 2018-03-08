@@ -8,6 +8,7 @@ import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
 @Getter
@@ -44,7 +45,11 @@ public class User {
     @Column(name = "role")
     private String role;
 
+    // todo: remove, just for offline testing purposes
+    private static AtomicInteger idGenerator=new AtomicInteger();
+
     public User(String email, String username, String password) {
+        this.id = (long) idGenerator.incrementAndGet();
         this.email = email;
         this.username = username;
         this.password = password;
