@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Calendar;
 import java.util.stream.Stream;
 
 @Service
@@ -28,24 +29,26 @@ public class StorageService implements IStorageService {
     }
 
     @Override
-    public void store(MultipartFile file) {
+    public String store(MultipartFile file) {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        Path currentPath;
         try {
+            currentPath = resolveCurrentDirectory();
             if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + filename);
             }
             if (filename.contains("..")) {
                 // This is a security check
                 throw new StorageException(
-                        "Cannot store file with relative path outside current directory "
-                                + filename);
+                        "Cannot store file with relative path outside current directory " + filename);
             }
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(filename),
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), currentPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
             throw new StorageException("Failed to store file " + filename, e);
         }
+
+        return currentPath.toString() + filename;
     }
 
     @Override
@@ -98,5 +101,20 @@ public class StorageService implements IStorageService {
         catch (IOException e) {
             throw new StorageException("Could not initialize storage", e);
         }
+    }
+
+    private Path resolveCurrentDirectory() throws IOException {
+        Calendar now = Calendar.getInstance();
+        String year  =  String.valueOf(now.get(Calendar.YEAR));
+        String month =  String.valueOf(now.get(Calendar.MONTH));
+        String day   =  String.valueOf(now.get(Calendar.DATE));
+
+        Path path = Paths.get(rootLocation.toString() ,  year, month, day);
+
+        if(!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
+
+        return path;
     }
 }

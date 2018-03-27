@@ -76,11 +76,7 @@ public class FileUploadApi {
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-        storageService.store(file);
-        System.out.println("Filename :" + file.getOriginalFilename());
-
-        String serverFileLocation = "/files/show/" + file.getOriginalFilename();
-        // might as well be /img/ + filename since Spring serves files from resource/ folder where images are stored
+        String serverFileLocation = storageService.store(file);
         return new ResponseEntity<>(serverFileLocation , HttpStatus.OK);
     }
 

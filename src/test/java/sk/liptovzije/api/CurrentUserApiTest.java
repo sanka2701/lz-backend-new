@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import sk.liptovzije.api.security.WebSecurityConfig;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.api.errors.CustomizeExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -42,9 +41,9 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         given()
             .header("Authorization", "Token " + token)
             .contentType("application/json")
-            .when()
+        .when()
             .get("/user")
-            .then()
+        .then()
             .statusCode(200)
             .body("user.email", equalTo(email))
             .body("user.username", equalTo(username))
@@ -55,11 +54,10 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
     public void should_get_401_without_token() throws Exception {
         given()
             .contentType("application/json")
-            .when()
+        .when()
             .get("/user")
-            .then()
+        .then()
             .statusCode(401);
-
     }
 
     @Test
@@ -69,9 +67,9 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         given()
             .contentType("application/json")
             .header("Authorization", "Token " + invalidToken)
-            .when()
+        .when()
             .get("/user")
-            .then()
+        .then()
             .statusCode(401);
     }
 
@@ -95,9 +93,9 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
             .contentType("application/json")
             .header("Authorization", "Token " + token)
             .body(param)
-            .when()
+        .when()
             .put("/user")
-            .then()
+        .then()
             .statusCode(200);
     }
 
@@ -120,10 +118,10 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
             .contentType("application/json")
             .header("Authorization", "Token " + token)
             .body(param)
-            .when()
+        .when()
             .put("/user")
             .prettyPeek()
-            .then()
+        .then()
             .statusCode(422)
             .body("errors.email[0]", equalTo("email already exist"));
     }
@@ -135,7 +133,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
             .body(new HashMap<String, Object>() {{
                 put("user", new HashMap<String, Object>());
             }})
-            .when()
+        .when()
             .put("/user")
             .then().statusCode(401);
     }
