@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public class UserWithToken {
     // todo: add remaining user data except password
+    private Long id;
     private String email;
     private String username;
     private String token;
@@ -14,6 +15,7 @@ public class UserWithToken {
     }
 
     public UserWithToken(UserData userData, String token) {
+        this.id = userData.getId();
         this.email = userData.getEmail();
         this.username = userData.getUsername();
         this.token = token;
