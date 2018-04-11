@@ -42,13 +42,13 @@ public class StorageService implements IStorageService {
                 throw new StorageException(
                         "Cannot store file with relative path outside current directory " + filename);
             }
-            Files.copy(file.getInputStream(), currentPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), load(currentPath.resolve(filename).toString()), StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
             throw new StorageException("Failed to store file " + filename, e);
         }
 
-        return currentPath.toString() + filename;
+        return Paths.get(currentPath.toString(), filename).toString();
     }
 
     @Override
@@ -61,7 +61,6 @@ public class StorageService implements IStorageService {
         catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
         }
-
     }
 
     @Override
@@ -89,6 +88,12 @@ public class StorageService implements IStorageService {
     }
 
     @Override
+    public void delete(String filePath) throws IOException {
+        Path path = rootLocation.resolve(filePath);
+        Files.delete(path);
+    }
+
+    @Override
     public void deleteAll() {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
     }
@@ -109,12 +114,13 @@ public class StorageService implements IStorageService {
         String month =  String.valueOf(now.get(Calendar.MONTH));
         String day   =  String.valueOf(now.get(Calendar.DATE));
 
-        Path path = Paths.get(rootLocation.toString() ,  year, month, day);
+        Path dateSubPath = Paths.get(year, month, day);
+        Path finalPath   = rootLocation.resolve(dateSubPath);
 
-        if(!Files.exists(path)) {
-            Files.createDirectories(path);
+        if(!Files.exists(finalPath)) {
+            Files.createDirectories(finalPath);
         }
 
-        return path;
+        return dateSubPath;
     }
 }

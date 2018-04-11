@@ -1,6 +1,8 @@
 package sk.liptovzije.api;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.restassured.module.mockmvc.response.MockMvcResponse;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +34,8 @@ public class FileUploadApiTest extends TestWithCurrentUser {
     @Autowired
     private MockMvc mvc;
 
-    @MockBean
-    private IStorageService storageService;
+//    @MockBean
+//    private IStorageService storageService;
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -52,7 +54,7 @@ public class FileUploadApiTest extends TestWithCurrentUser {
         File file = folder.newFile(filename);
         IOUtils.write("Something21", new FileOutputStream(file));
 
-        when(storageService.store(any())).thenReturn(fileLocation);
+//        when(storageService.store(any())).thenReturn(fileLocation);
 //        doNothing().when(storageService).store(any());
 
         given()
@@ -64,5 +66,35 @@ public class FileUploadApiTest extends TestWithCurrentUser {
         .then()
             .statusCode(200)
             .body(equalTo(fileLocation));
+    }
+
+    @Test
+    public void store_and_delete() throws Exception {
+        // comment out storage service mock
+        File file = folder.newFile("picture.jpg");
+        IOUtils.write("Something21", new FileOutputStream(file));
+
+        MockMvcResponse res = given()
+            .header("Authorization", "Token " + token)
+            .contentType("multipart/form-data")
+            .multiPart(file)
+        .when()
+            .post("/files/upload");
+
+        String path  = res.getMvcResult().getResponse().getContentAsString();
+
+        res = given()
+            .header("Authorization", "Token " + token)
+        .when()
+            .get("/files/show/" + path);
+
+        String pic  = res.getMvcResult().getResponse().getContentAsString();
+
+        given()
+            .header("Authorization", "Token " + token)
+        .when()
+            .delete("/files/delete/" + path);
+
+        int a =5;
     }
 }

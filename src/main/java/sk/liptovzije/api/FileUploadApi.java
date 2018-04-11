@@ -63,8 +63,9 @@ public class FileUploadApi {
      * @return
      * @throws IOException
      */
-    @RequestMapping(value = "/show/{filename:.+}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/show/{filename:.+}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> showFile(@PathVariable String filename) throws IOException {
+        // todo : this way blocks the image resouce and can not be deleted - needs to find other way to serve image
         Resource imgFile = storageService.loadAsResource(filename);
         byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
 
@@ -72,6 +73,12 @@ public class FileUploadApi {
                 .ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(bytes);
+    }
+
+    @DeleteMapping("delete/{filename:.+}")
+    public ResponseEntity<?> deleteFile(@PathVariable String filename) throws IOException {
+        storageService.delete(filename);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/upload")
