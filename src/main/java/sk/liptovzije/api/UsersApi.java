@@ -75,8 +75,7 @@ public class UsersApi {
             bindingResult.rejectValue("username", "DUPLICATED", "duplicated username");
         }
 
-        if (!registerParam.getEmail().isEmpty() && userService.findByEmail(registerParam.getEmail()).isPresent()
-            ) {
+        if (!registerParam.getEmail().isEmpty() && userService.findByEmail(registerParam.getEmail()).isPresent()) {
             bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");
         }
 

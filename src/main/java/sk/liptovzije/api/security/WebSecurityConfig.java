@@ -33,10 +33,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeRequests()
             .antMatchers(HttpMethod.OPTIONS).permitAll()
-                .antMatchers(HttpMethod.DELETE, "/files/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/img/**").permitAll()
-            .antMatchers(HttpMethod.GET, "/files/show/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/img/**").permitAll()
             .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
+            .antMatchers(HttpMethod.GET, "/places").permitAll()
             .antMatchers(HttpMethod.GET, "/articles/feed").authenticated()
             .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags").permitAll()
             .anyRequest().authenticated();
