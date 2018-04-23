@@ -4,8 +4,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
 @Getter
@@ -31,4 +33,15 @@ public class Place {
 
     @Column(name = "latitude")
     private double latitude;
+
+    // todo: remove, just for offline testing purposes
+    private static AtomicInteger idGenerator=new AtomicInteger();
+
+    public Place(String name, double longitude, double latitude) {
+        this.id = (long) idGenerator.incrementAndGet();
+        this.name = name;
+        this.searchableName = StringUtils.stripAccents(name);
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 }

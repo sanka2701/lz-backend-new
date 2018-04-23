@@ -39,7 +39,7 @@ public class UserService implements IUserService {
     public Optional<User> update(User user) {
         usersRepo.stream()
                 .filter(currentUser -> currentUser.getId().equals(user.getId()))
-                .forEach(currentUser -> currentUser = user);
+                .forEach(updatedUser -> updatedUser = user);
 
         return Optional.empty();
     }
