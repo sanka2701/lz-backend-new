@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.application.user.UserData;
-import sk.liptovzije.application.user.UserWithToken;
 import sk.liptovzije.core.service.user.IUserService;
 import sk.liptovzije.utils.exception.InvalidRequestException;
 
@@ -35,9 +34,7 @@ public class CurrentUserApi {
     public ResponseEntity currentUser(@AuthenticationPrincipal User currentUser,
                                       @RequestHeader(value = "Authorization") String authorization) {
         UserData userData = currentUser.toData();
-        return ResponseEntity.ok(userResponse(
-            new UserWithToken(userData, authorization.split(" ")[1])
-        ));
+        return ResponseEntity.ok(userResponse(userData, authorization.split(" ")[1]));
     }
 
     @PutMapping
@@ -51,9 +48,7 @@ public class CurrentUserApi {
         checkUniquenessOfUsernameAndEmail(currentUser, updateUserParam, bindingResult);
 
         UserData userData = userService.update(updateUserParam).map(User::toData).get();
-        return ResponseEntity.ok(userResponse(
-                new UserWithToken(userData, token.split(" ")[1])
-        ));
+        return ResponseEntity.ok(userResponse(userData, token.split(" ")[1]));
     }
 
     private void checkUniquenessOfUsernameAndEmail(User currentUser, User updatedUser, BindingResult bindingResult) {
@@ -76,9 +71,10 @@ public class CurrentUserApi {
         }
     }
 
-    private Map<String, Object> userResponse(UserWithToken userWithToken) {
+    private Map<String, Object> userResponse(UserData userData, String token) {
         return new HashMap<String, Object>() {{
-            put("user", userWithToken);
+            put("user", userData);
+            put("token", token);
         }};
     }
 }

@@ -1,13 +1,17 @@
 package sk.liptovzije.core.service.place;
 
+import org.springframework.stereotype.Service;
 import sk.liptovzije.application.place.Place;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Transactional
+@Service
 public class PlaceService implements IPlaceService {
 
     private List<Place> placesRepo = new ArrayList<>();

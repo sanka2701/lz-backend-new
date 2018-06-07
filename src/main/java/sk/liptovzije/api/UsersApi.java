@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.application.user.UserData;
-import sk.liptovzije.application.user.UserWithToken;
 import sk.liptovzije.core.service.encrypt.IEncryptService;
 import sk.liptovzije.core.service.jwt.IJwtService;
 import sk.liptovzije.core.service.user.IUserService;
@@ -52,7 +51,7 @@ public class UsersApi {
                 encryptService.encrypt(registerParam.getPassword()));
 
         UserData userData = userService.save(user).map(User::toData).get();
-        return ResponseEntity.status(201).body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
+        return ResponseEntity.status(201).body(userResponse(userData, jwtService.toToken(user)));
     }
 
     @RequestMapping(path = "/users/login", method = POST)
@@ -60,9 +59,9 @@ public class UsersApi {
         Optional<User> optional = userService.findByUsername(loginParam.getUsername());
         if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
             UserData userData = optional.map(User::toData).get();
-            return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+            return ResponseEntity.ok(userResponse(userData, jwtService.toToken(optional.get())));
         } else {
-            bindingResult.rejectValue("password", "INVALID", "invalid email or password");
+            bindingResult.rejectValue("password", "INVALID", "err.invalidCredentials");
             throw new InvalidRequestException(bindingResult);
         }
     }
@@ -72,11 +71,13 @@ public class UsersApi {
             throw new InvalidRequestException(bindingResult);
         }
         if (userService.findByUsername(registerParam.getUsername()).isPresent()) {
-            bindingResult.rejectValue("username", "DUPLICATED", "duplicated username");
+            bindingResult.rejectValue("username", "DUPLICATED", "err.duplicatedUsername");
         }
 
-        if (!registerParam.getEmail().isEmpty() && userService.findByEmail(registerParam.getEmail()).isPresent()) {
-            bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");
+        if (registerParam.getEmail() != null &&
+                !registerParam.getEmail().isEmpty() &&
+                userService.findByEmail(registerParam.getEmail()).isPresent()) {
+            bindingResult.rejectValue("email", "DUPLICATED", "err.duplicatedEmail");
         }
 
         if (bindingResult.hasErrors()) {
@@ -84,9 +85,10 @@ public class UsersApi {
         }
     }
 
-    private Map<String, Object> userResponse(UserWithToken userWithToken) {
+    private Map<String, Object> userResponse(UserData userData, String token) {
         return new HashMap<String, Object>() {{
-            put("user", userWithToken);
+            put("user", userData);
+            put("token", token);
         }};
     }
 }
