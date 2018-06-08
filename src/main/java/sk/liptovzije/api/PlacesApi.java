@@ -39,8 +39,8 @@ public class PlacesApi {
         return ResponseEntity.ok(singlePlaceResponse(requestedPlace));
     }
 
-    @GetMapping("/name")
-    public ResponseEntity listPlacesByName(@Valid @RequestBody String subname, BindingResult bindingResult) {
+    @GetMapping("/name/{subname}")
+    public ResponseEntity listPlacesByName(@Valid @PathVariable(value="subname") String subname, BindingResult bindingResult) {
         List<Place> listedPlaces = this.placeService.getBySubstring(subname);
         return ResponseEntity.ok(placeListResponse(listedPlaces));
     }
