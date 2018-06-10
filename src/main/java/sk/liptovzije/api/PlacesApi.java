@@ -12,9 +12,11 @@ import sk.liptovzije.application.place.Place;
 import sk.liptovzije.core.service.place.IPlaceService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import java.util.*;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -39,15 +41,15 @@ public class PlacesApi {
         return ResponseEntity.ok(singlePlaceResponse(requestedPlace));
     }
 
-    @GetMapping("/name/{subname}")
-    public ResponseEntity listPlacesByName(@Valid @PathVariable(value="subname") String subname, BindingResult bindingResult) {
+    @GetMapping()
+    public ResponseEntity listPlacesByName(@RequestParam("subname") String subname) {
         List<Place> listedPlaces = this.placeService.getBySubstring(subname);
         return ResponseEntity.ok(placeListResponse(listedPlaces));
     }
 
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
-        Place place = new Place(newPlace.name, newPlace.longitude, newPlace.latitude);
+        Place place = new Place(newPlace.getName(), newPlace.getAddress(), newPlace.getLongitude(), newPlace.getLatitude());
         this.placeService.save(place);
         return ResponseEntity.ok().build();
     }
@@ -74,16 +76,18 @@ public class PlacesApi {
             put("places", places);
         }};
     }
+}
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    class PlaceParam {
-        @NotBlank(message = "can't be empty")
-        private String name;
-        @NotBlank(message = "can't be empty")
-        private Double longitude;
-        @NotBlank(message = "can't be empty")
-        private double latitude;
-    }
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class PlaceParam {
+    @NotBlank(message = "can't be empty")
+    private String name;
+    @NotBlank(message = "can't be empty")
+    private String address;
+    @NotNull(message = "can't be empty")
+    private Double longitude;
+    @NotNull(message = "can't be empty")
+    private Double latitude;
 }

@@ -1,5 +1,7 @@
 package sk.liptovzije.core.service.place;
 
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.place.Place;
 
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 public class PlaceService implements IPlaceService {
 
     private List<Place> placesRepo = new ArrayList<>();
-
+    private int FUZZY_SCORE_TRESHOLD = 85;
 
     @Override
     public void save(Place place) {
@@ -46,7 +48,12 @@ public class PlaceService implements IPlaceService {
     @Override
     public List<Place> getBySubstring(String subName) {
         return this.placesRepo.stream()
-                .filter(place -> place.getSearchableName().toLowerCase().contains(subName.toLowerCase()))
+                .filter(place -> {
+                    String normalizedName  = StringUtils.stripAccents(place.getName()).toLowerCase();
+                    String normalizedQuery = StringUtils.stripAccents(subName).toLowerCase();
+                    return (normalizedName.contains(normalizedQuery)
+                            || FuzzySearch.ratio(normalizedName, normalizedQuery) > FUZZY_SCORE_TRESHOLD);
+                })
                 .collect(Collectors.toList());
     }
 }

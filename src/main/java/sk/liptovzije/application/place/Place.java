@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,8 +24,8 @@ public class Place {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "searchable_name")
-    private String searchableName;
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "longitude")
     private double longitude;
@@ -37,10 +36,10 @@ public class Place {
     // todo: remove, just for offline testing purposes
     private static AtomicInteger idGenerator=new AtomicInteger();
 
-    public Place(String name, double longitude, double latitude) {
+    public Place(String name, String address, double longitude, double latitude) {
         this.id = (long) idGenerator.incrementAndGet();
         this.name = name;
-        this.searchableName = StringUtils.stripAccents(name);
+        this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
     }
