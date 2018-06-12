@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -49,7 +50,7 @@ public class PlacesApi {
 
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
-        Place place = new Place(newPlace.getName(), newPlace.getAddress(), newPlace.getLongitude(), newPlace.getLatitude());
+        Place place = new Place(newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
         this.placeService.save(place);
         return ResponseEntity.ok().build();
     }
@@ -67,13 +68,17 @@ public class PlacesApi {
 
     private Map<String, Object> singlePlaceResponse(Place place){
         return new HashMap<String, Object>() {{
-            put("place", place);
+            put("place", new PlaceParam(place));
         }};
     }
 
     private Map<String, List> placeListResponse(List<Place> places){
+        List<PlaceParam> params = places.stream()
+                .map(place -> new PlaceParam(place))
+                .collect(Collectors.toList());
+
         return new HashMap<String, List>() {{
-            put("places", places);
+            put("places", params);
         }};
     }
 }
@@ -83,11 +88,18 @@ public class PlacesApi {
 @AllArgsConstructor
 class PlaceParam {
     @NotBlank(message = "can't be empty")
-    private String name;
+    private String label;
     @NotBlank(message = "can't be empty")
     private String address;
     @NotNull(message = "can't be empty")
-    private Double longitude;
+    private Double lon;
     @NotNull(message = "can't be empty")
-    private Double latitude;
+    private Double lat;
+
+    PlaceParam(Place domainPlace) {
+        this.label = domainPlace.getName();
+        this.address = domainPlace.getAddress();
+        this.lon = domainPlace.getLongitude();
+        this.lat = domainPlace.getLatitude();
+    }
 }
