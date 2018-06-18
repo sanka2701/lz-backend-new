@@ -77,22 +77,22 @@ public class EventsApi {
             put("event", event);
         }};
     }
+}
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    class NewEventParam {
-        private Long id;
-        private Long placeId;
-        private Long ownerId;
-        @NotBlank(message = "can't be empty")
-        private String heading;
-        @NotBlank(message = "can't be empty")
-        private String content;
-        private String thumbnail;
-        private LocalDate startDate;
-        private LocalTime startTime;
-        private LocalDate endDate;
-        private LocalTime endTime;
-    }
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class NewEventParam {
+    private Long id;
+    private Long placeId;
+    private Long ownerId;
+    @NotBlank(message = "can't be empty")
+    private String heading;
+    @NotBlank(message = "can't be empty")
+    private String content;
+    private String thumbnail;
+    private LocalDate startDate;
+    private LocalTime startTime;
+    private LocalDate endDate;
+    private LocalTime endTime;
 }
