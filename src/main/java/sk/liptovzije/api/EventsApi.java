@@ -83,7 +83,6 @@ public class EventsApi {
 @NoArgsConstructor
 @AllArgsConstructor
 class NewEventParam {
-    private Long id;
     private Long placeId;
     private Long ownerId;
     @NotBlank(message = "can't be empty")

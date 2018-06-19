@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IPlaceService {
-    void save(Place place);
+    Optional<Place> save(Place place);
 
     void update(Place place);
 

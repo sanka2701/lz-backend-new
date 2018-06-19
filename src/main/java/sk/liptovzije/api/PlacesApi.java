@@ -10,11 +10,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sk.liptovzije.application.place.Place;
 import sk.liptovzije.core.service.place.IPlaceService;
+import sk.liptovzije.utils.exception.InvalidRequestException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -33,11 +35,6 @@ public class PlacesApi {
 
     @GetMapping("/id")
     public ResponseEntity getPlaceById(@Valid @RequestBody long id) {
-//        Map result = this.placeService.getById(id)
-//                .map(this::singlePlaceResponse)
-//                .orElse(Collections.emptyMap());
-//        return ResponseEntity.ok(result);
-
         Place requestedPlace = this.placeService.getById(id).get();
         return ResponseEntity.ok(singlePlaceResponse(requestedPlace));
     }
@@ -50,9 +47,10 @@ public class PlacesApi {
 
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
+        //todo: check binding
         Place place = new Place(newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
-        this.placeService.save(place);
-        return ResponseEntity.ok().build();
+        Place storedPlace = this.placeService.save(place).orElseThrow(InternalError::new);
+        return ResponseEntity.ok(singlePlaceResponse(storedPlace));
     }
 
     @DeleteMapping
@@ -87,6 +85,7 @@ public class PlacesApi {
 @NoArgsConstructor
 @AllArgsConstructor
 class PlaceParam {
+    private Long id;
     @NotBlank(message = "can't be empty")
     private String label;
     @NotBlank(message = "can't be empty")
@@ -97,6 +96,7 @@ class PlaceParam {
     private Double lat;
 
     PlaceParam(Place domainPlace) {
+        this.id = domainPlace.getId();
         this.label = domainPlace.getName();
         this.address = domainPlace.getAddress();
         this.lon = domainPlace.getLongitude();

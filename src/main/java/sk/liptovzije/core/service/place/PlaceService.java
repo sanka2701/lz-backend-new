@@ -20,8 +20,10 @@ public class PlaceService implements IPlaceService {
     private int FUZZY_SCORE_TRESHOLD = 85;
 
     @Override
-    public void save(Place place) {
+    public Optional<Place> save(Place place) {
         this.placesRepo.add(place);
+
+        return Optional.ofNullable(place);
     }
 
     @Override
