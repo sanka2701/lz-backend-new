@@ -18,6 +18,7 @@ import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -50,16 +51,17 @@ public class EventsApi {
     }
 
     @GetMapping()
-    public ResponseEntity getEvent(@Valid @RequestBody long id) {
+    public ResponseEntity getEvent(@RequestParam("id") long id) {
         return this.eventService.getById(id)
                 .map(event -> ResponseEntity.ok(this.eventResponse(event)))
                 .orElseThrow(ResourceNotFoundException::new);
     }
 
     @GetMapping("/filter")
-    public ResponseEntity filterEvents(@Valid @RequestBody EventFilter filter) {
+    public ResponseEntity filterEvents(/*@Valid @RequestBody EventFilter filter*/) {
         // todo
-        return ResponseEntity.ok().build();
+        List<Event> events = this.eventService.getByFilter();
+        return ResponseEntity.ok(eventListResponse(events));
     }
 
     private Event paramToEvent(long ownerId, NewEventParam param) {
@@ -70,6 +72,12 @@ public class EventsApi {
                 .endTime(param.getEndTime())
                 .thumbnail(param.getThumbnail())
                 .build();
+    }
+
+    private Map<String, List> eventListResponse(List<Event> events){
+        return new HashMap<String, List>() {{
+            put("events", events);
+        }};
     }
 
     private Map<String, Object> eventResponse(Event event) {

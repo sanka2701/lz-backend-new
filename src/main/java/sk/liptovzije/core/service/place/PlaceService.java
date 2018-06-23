@@ -20,9 +20,9 @@ public class PlaceService implements IPlaceService {
     private int FUZZY_SCORE_TRESHOLD = 85;
 
     public PlaceService() {
-        placesRepo.add(new Place("Ahoj", "Addressa 1", 19.596746688751296, 49.09751301668884));
-        placesRepo.add(new Place("Ahojky", "Addressa 2", 19.584112410359808, 49.08447298057577));
-        placesRepo.add(new Place("Nazdar", "Addressa 3", 19.560835126597226, 49.093241657941725));
+        placesRepo.add(new Place(0L, "Ahoj", "Addressa 1", 19.596746688751296, 49.09751301668884));
+        placesRepo.add(new Place(1L, "Ahojky", "Addressa 2", 19.584112410359808, 49.08447298057577));
+        placesRepo.add(new Place(2L, "Nazdar", "Addressa 3", 19.560835126597226, 49.093241657941725));
     }
 
     @Override

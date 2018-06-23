@@ -36,8 +36,8 @@ public class Place {
     // todo: remove, just for offline testing purposes
     private static AtomicInteger idGenerator=new AtomicInteger();
 
-    public Place(String name, String address, double longitude, double latitude) {
-        this.id = (long) idGenerator.incrementAndGet();
+    public Place(Long id, String name, String address, double longitude, double latitude) {
+        this.id = id!= null ? id : (long) idGenerator.incrementAndGet();
         this.name = name;
         this.address = address;
         this.latitude = latitude;

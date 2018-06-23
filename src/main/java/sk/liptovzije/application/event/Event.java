@@ -111,10 +111,15 @@ public class Event {
             return this;
         }
 
+        public Builder id(long id){
+            this.id = id;
+            return this;
+        }
+
         public Event build() {
             Event event = new Event();
 
-            event.setId((long) idGenerator.incrementAndGet());
+            event.setId(id != null ? id :(long) idGenerator.incrementAndGet());
             event.setApproved(false);
 
             event.setPlaceId(placeId);
