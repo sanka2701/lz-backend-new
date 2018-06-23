@@ -19,10 +19,15 @@ public class StorageProperties {
     public StorageProperties() {
         // todo: seems a bit hacky
         URL path = this.getClass().getClassLoader().getResource("static/img");
+        String stringPath = path.getPath();
 
-        logger.debug("Store location for files is: " + path.getPath().substring(1));
-System.out.println("Store: " + path.getPath().substring(1));
-        this.location = path.getPath().substring(1); // removes starting '/'
+        if(stringPath.startsWith("/")) {
+            stringPath = stringPath.substring(1);
+        }
+
+        logger.debug("Store location for files is: " + stringPath);
+
+        this.location = stringPath;
     }
 
     public String getLocation() {
