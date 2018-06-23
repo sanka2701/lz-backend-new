@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.application.user.UserData;
 import sk.liptovzije.core.service.encrypt.IEncryptService;
+import sk.liptovzije.core.service.encrypt.NaiveEncryptService;
 import sk.liptovzije.core.service.jwt.IJwtService;
 import sk.liptovzije.core.service.user.IUserService;
 import sk.liptovzije.utils.exception.InvalidRequestException;
@@ -34,7 +35,7 @@ public class UsersApi {
 
     @Autowired
     public UsersApi(IUserService userService,
-                    IEncryptService encryptService,
+                    NaiveEncryptService encryptService,
                     IJwtService jwtService) {
         this.userService = userService;
         this.encryptService = encryptService;

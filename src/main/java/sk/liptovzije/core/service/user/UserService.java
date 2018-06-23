@@ -5,7 +5,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.user.QUser;
+import sk.liptovzije.application.user.Roles;
 import sk.liptovzije.application.user.User;
+import sk.liptovzije.core.service.encrypt.IEncryptService;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -21,6 +23,15 @@ public class UserService implements IUserService {
 //    private SessionFactory sessionFactory;
 
     List<User> usersRepo = new ArrayList<>();
+
+
+    @Autowired
+    public UserService(){
+        User admin = new User("admin@lz.sk", "admin", "admin");
+        admin.setRole(Roles.ROLE_ADMIN);
+
+        usersRepo.add(admin);
+    }
 
     @Override
     public Optional<User> save(User user) {

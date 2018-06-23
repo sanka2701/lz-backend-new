@@ -16,6 +16,7 @@ import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.event.IEventService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,7 @@ public class EventsApi {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity filterEvents(/*@Valid @RequestBody EventFilter filter*/) {
+    public ResponseEntity filterEvents(HttpServletRequest request /*@Valid @RequestBody EventFilter filter*/) {
         // todo
         List<Event> events = this.eventService.getByFilter();
         return ResponseEntity.ok(eventListResponse(events));

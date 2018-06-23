@@ -48,7 +48,7 @@ public class PlacesApi {
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
         //todo: check binding
-        Place place = new Place(null, newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
+        Place place = new Place(null, null, newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
         Place storedPlace = this.placeService.save(place).orElseThrow(InternalError::new);
         return ResponseEntity.ok(singlePlaceResponse(storedPlace));
     }
