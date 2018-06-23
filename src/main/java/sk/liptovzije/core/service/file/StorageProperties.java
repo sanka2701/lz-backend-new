@@ -11,24 +11,24 @@ import java.net.URL;
 
 @Configuration
 public class StorageProperties {
-//    @Value("${app.storage.location}")
+    @Value("${app.storage.location}")
     private String location;
 
     private static Logger logger = LoggerFactory.getLogger(StorageProperties.class);
 
-    public StorageProperties() {
-        // todo: seems a bit hacky
-        URL path = this.getClass().getClassLoader().getResource("static/img");
-        String stringPath = path.getPath();
-
-        if(stringPath.startsWith("/")) {
-            stringPath = stringPath.substring(1);
-        }
-
-        logger.debug("Store location for files is: " + stringPath);
-
-        this.location = stringPath;
-    }
+//    public StorageProperties() {
+//        // todo: seems a bit hacky
+//        URL path = this.getClass().getClassLoader().getResource("static/img");
+//        String stringPath = path.getPath();
+//
+//        if(stringPath.startsWith("/")) {
+//            stringPath = stringPath.substring(1);
+//        }
+//
+//        logger.debug("Store location for files is: " + stringPath);
+//
+//        this.location = stringPath;
+//    }
 
     public String getLocation() {
         return location;
