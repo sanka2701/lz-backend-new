@@ -24,6 +24,7 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
 
         String urlStr = new File(".").getAbsolutePath();
         urlStr = urlStr.replace("\\", "/");
+        urlStr = urlStr.startsWith("/") ? urlStr.substring(1) : urlStr;
         urlStr = urlStr.substring(0,urlStr.length() - 1);
         urlStr = "file:///" + urlStr;
 
