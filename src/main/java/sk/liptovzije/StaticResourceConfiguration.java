@@ -38,6 +38,8 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
             urlStr += location;
         }
 
+        urlStr += urlStr.endsWith("/") ? "" : "/";
+
         logger.debug("Path to served content: " + urlStr);
 
         registry.addResourceHandler("/img/**").addResourceLocations(urlStr);
