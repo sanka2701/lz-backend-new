@@ -10,16 +10,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sk.liptovzije.application.place.Place;
 import sk.liptovzije.core.service.place.IPlaceService;
-import sk.liptovzije.utils.exception.InvalidRequestException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -72,7 +69,7 @@ public class PlacesApi {
 
     private Map<String, List> placeListResponse(List<Place> places){
         List<PlaceParam> params = places.stream()
-                .map(place -> new PlaceParam(place))
+                .map(PlaceParam::new)
                 .collect(Collectors.toList());
 
         return new HashMap<String, List>() {{

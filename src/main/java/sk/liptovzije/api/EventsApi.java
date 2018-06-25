@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,29 +11,35 @@ import org.springframework.web.bind.annotation.*;
 import sk.liptovzije.application.event.Event;
 import sk.liptovzije.application.event.EventFilter;
 import sk.liptovzije.application.user.User;
+import sk.liptovzije.core.service.authorization.IAuthorizationService;
 import sk.liptovzije.core.service.event.IEventService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/events")
 public class EventsApi {
 
     private IEventService eventService;
+    private IAuthorizationService authorizationService;
 
     @Autowired
-    public EventsApi(IEventService eventService) {
+    public EventsApi(
+            IEventService eventService,
+            IAuthorizationService authorizationService ){
         this.eventService = eventService;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping
-    public ResponseEntity createEvent(@Valid @RequestBody NewEventParam newEvent, @AuthenticationPrincipal User user) {
-        Event event = this.paramToEvent(user.getId(), newEvent);
+    public ResponseEntity createEvent(@Valid @RequestBody EventParam newEvent,
+                                      @AuthenticationPrincipal User user) {
+        Event event = this.paramToEvent(user, newEvent);
 
         return this.eventService.save(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
@@ -43,12 +47,19 @@ public class EventsApi {
     }
 
     @PostMapping("/update")
-    public ResponseEntity updateEvent(@Valid @RequestBody NewEventParam updatedEvent) {
-        Event event = this.paramToEvent(updatedEvent.getOwnerId(), updatedEvent);
+    public ResponseEntity updateEvent(@Valid @RequestBody EventParam updatedEvent,
+                                      @AuthenticationPrincipal User user) {
+        Event event = this.paramToEvent(user, updatedEvent);
 
         return this.eventService.update(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
                 .orElseThrow(ResourceNotFoundException::new);
+    }
+
+    @PostMapping("/approve")
+    public ResponseEntity approveEvent(@RequestParam("id") long id) {
+        this.eventService.approve(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping()
@@ -58,32 +69,36 @@ public class EventsApi {
                 .orElseThrow(ResourceNotFoundException::new);
     }
 
-    @GetMapping("/filter")
-    public ResponseEntity filterEvents(HttpServletRequest request /*@Valid @RequestBody EventFilter filter*/) {
-        // todo
-        List<Event> events = this.eventService.getByFilter();
+    @PostMapping("/filter")
+    public ResponseEntity filterEvents(@Valid @RequestBody EventFilter filter) {
+        List<Event> events = this.eventService.getByFilter(filter);
         return ResponseEntity.ok(eventListResponse(events));
     }
 
-    private Event paramToEvent(long ownerId, NewEventParam param) {
-        return new Event.Builder(ownerId, param.getHeading(), param.getContent())
+    private Event paramToEvent(User owner, EventParam param) {
+        return new Event.Builder(owner.getId(), param.getHeading(), param.getContent())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())
                 .endDate(param.getEndDate())
                 .endTime(param.getEndTime())
                 .thumbnail(param.getThumbnail())
+                .approved(authorizationService.canApproveEvent(owner))
                 .build();
     }
 
     private Map<String, List> eventListResponse(List<Event> events){
+        List<EventParam> params = events.stream()
+                .map(EventParam::new)
+                .collect(Collectors.toList());
+
         return new HashMap<String, List>() {{
-            put("events", events);
+            put("events", params);
         }};
     }
 
     private Map<String, Object> eventResponse(Event event) {
         return new HashMap<String, Object>() {{
-            put("event", event);
+            put("event", new EventParam(event));
         }};
     }
 }
@@ -91,7 +106,8 @@ public class EventsApi {
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-class NewEventParam {
+class EventParam {
+    private Long id;
     private Long placeId;
     private Long ownerId;
     @NotBlank(message = "can't be empty")
@@ -99,8 +115,21 @@ class NewEventParam {
     @NotBlank(message = "can't be empty")
     private String content;
     private String thumbnail;
-    private LocalDate startDate;
-    private LocalTime startTime;
-    private LocalDate endDate;
-    private LocalTime endTime;
+    private Long startDate;
+    private Long startTime;
+    private Long endDate;
+    private Long endTime;
+
+    public EventParam(Event domainEvent) {
+        this.id        = domainEvent.getId();
+        this.placeId   = domainEvent.getPlaceId();
+        this.ownerId   = domainEvent.getOwnerId();
+        this.heading   = domainEvent.getHeading();
+        this.content   = domainEvent.getContent();
+        this.thumbnail = domainEvent.getThumbnail();
+        this.startDate = domainEvent.getStartDate().toDate().getTime();
+        this.startTime = domainEvent.getStartTime().toDateTimeToday().getMillis();
+        this.endDate   = domainEvent.getEndDate().toDate().getTime();
+        this.endTime   = domainEvent.getEndTime().toDateTimeToday().getMillis();
+    }
 }

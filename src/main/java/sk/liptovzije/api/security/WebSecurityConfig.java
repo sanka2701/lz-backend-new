@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static java.util.Arrays.asList;
+import static sk.liptovzije.application.user.Roles.ADMIN;
 
 @Configuration
 @EnableWebSecurity
@@ -33,12 +34,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeRequests()
             .antMatchers(HttpMethod.OPTIONS).permitAll()
-            .antMatchers(HttpMethod.GET, "/img/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/events/approve").hasRole(ADMIN)
             .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
+            .antMatchers(HttpMethod.POST, "/events/filter").permitAll()
+            .antMatchers(HttpMethod.GET, "/img/**").permitAll()
             .antMatchers(HttpMethod.GET, "/places").permitAll()
+            .antMatchers(HttpMethod.GET, "/places/id").permitAll()
             .antMatchers(HttpMethod.GET, "/events").permitAll()
-            .antMatchers(HttpMethod.GET, "/events/filter").permitAll()
-//            .antMatchers(HttpMethod.GET, "/events/filter").hasRole("USER")
             .anyRequest().authenticated();
 
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

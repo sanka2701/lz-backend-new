@@ -71,6 +71,7 @@ public class Event {
         private LocalTime endTime;
         private String thumbnail;
         private String content;
+        private Boolean approved;
 
         // todo: remove, just for offline testing purposes
         private static AtomicInteger idGenerator=new AtomicInteger();
@@ -79,10 +80,16 @@ public class Event {
             this.ownerId = ownerId;
             this.heading = heading;
             this.content = content;
+            this.approved = false;
         }
 
         public Builder startDate(LocalDate date){
             this.startDate = date;
+            return this;
+        }
+
+        public Builder startDate(Long millis){
+            this.startDate = new LocalDate(millis);
             return this;
         }
 
@@ -91,13 +98,28 @@ public class Event {
             return this;
         }
 
+        public Builder endDate(Long millis){
+            this.endDate = new LocalDate(millis);
+            return this;
+        }
+
         public Builder startTime(LocalTime time){
             this.startTime = time;
             return this;
         }
 
+        public Builder startTime(Long millis){
+            this.startTime = new LocalTime(millis);
+            return this;
+        }
+
         public Builder endTime(LocalTime time){
             this.endTime = time;
+            return this;
+        }
+
+        public Builder endTime(Long millis){
+            this.endTime = new LocalTime(millis);
             return this;
         }
 
@@ -111,6 +133,11 @@ public class Event {
             return this;
         }
 
+        public Builder approved(boolean approved){
+            this.approved = approved;
+            return this;
+        }
+
         public Builder id(long id){
             this.id = id;
             return this;
@@ -120,7 +147,7 @@ public class Event {
             Event event = new Event();
 
             event.setId(id != null ? id :(long) idGenerator.incrementAndGet());
-            event.setApproved(false);
+            event.setApproved(approved);
 
             event.setPlaceId(placeId);
             event.setOwnerId(ownerId);

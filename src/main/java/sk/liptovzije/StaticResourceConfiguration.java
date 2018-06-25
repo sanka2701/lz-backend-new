@@ -20,8 +20,6 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        String urlStr = this.getClass().getClassLoader().getResource("").toString() + "/";
-
         String urlStr = new File(".").getAbsolutePath();
         urlStr = urlStr.replace("\\", "/");
         urlStr = urlStr.startsWith("/") ? urlStr.substring(1) : urlStr;

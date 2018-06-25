@@ -7,17 +7,20 @@ import sk.liptovzije.application.user.Roles;
 import sk.liptovzije.application.user.User;
 
 @Service
-public class Authorization {
-
-    public static boolean canApproveEvent(User user) {
-        return user.getRole().equals(Roles.ROLE_ADMIN);
+public class AuthorizationService implements IAuthorizationService {
+    @Override
+    public boolean canApproveEvent(User user) {
+        return user.getRole().equals(Roles.ROLE_ADMIN) ||
+               user.getRole().equals(Roles.ROLE_TRUSTED_USER);
     }
 
-    public static boolean canModifyEvent(User user, Event event) {
+    @Override
+    public boolean canModifyEvent(User user, Event event) {
         return user.getRole().equals(Roles.ROLE_ADMIN) || event.getOwnerId().equals(user.getId());
     }
 
-    public static boolean canModifyPlace(User user, Place place) {
+    @Override
+    public boolean canModifyPlace(User user, Place place) {
         return user.getRole().equals(Roles.ROLE_ADMIN);
     }
 }
