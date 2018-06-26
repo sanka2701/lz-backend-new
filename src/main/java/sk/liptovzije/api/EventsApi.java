@@ -76,7 +76,7 @@ public class EventsApi {
     }
 
     private Event paramToEvent(User owner, EventParam param) {
-        return new Event.Builder(owner.getId(), param.getHeading(), param.getContent())
+        return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())
                 .endDate(param.getEndDate())
@@ -111,7 +111,7 @@ class EventParam {
     private Long placeId;
     private Long ownerId;
     @NotBlank(message = "can't be empty")
-    private String heading;
+    private String title;
     @NotBlank(message = "can't be empty")
     private String content;
     private String thumbnail;
@@ -124,7 +124,7 @@ class EventParam {
         this.id        = domainEvent.getId();
         this.placeId   = domainEvent.getPlaceId();
         this.ownerId   = domainEvent.getOwnerId();
-        this.heading   = domainEvent.getHeading();
+        this.title   = domainEvent.getHeading();
         this.content   = domainEvent.getContent();
         this.thumbnail = domainEvent.getThumbnail();
         this.startDate = domainEvent.getStartDate().toDate().getTime();
