@@ -56,6 +56,11 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public List<User> filter() {
+        return usersRepo;
+    }
+
+    @Override
     public Optional<User> findById(Long id) {
 //        HibernateQuery query = new HibernateQuery(sessionFactory.getCurrentSession());
 //

@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,16 +19,18 @@ import sk.liptovzije.core.service.encrypt.NaiveEncryptService;
 import sk.liptovzije.core.service.jwt.IJwtService;
 import sk.liptovzije.core.service.user.IUserService;
 import sk.liptovzije.utils.exception.InvalidRequestException;
+import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping(path = "/users")
 public class UsersApi {
     private IUserService userService;
     private IEncryptService encryptService;
@@ -42,7 +45,7 @@ public class UsersApi {
         this.jwtService = jwtService;
     }
 
-    @RequestMapping(path = "/users", method = POST)
+    @PostMapping
     public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam, BindingResult bindingResult) {
         checkInput(registerParam, bindingResult);
 
@@ -51,11 +54,17 @@ public class UsersApi {
                 registerParam.getUsername(),
                 encryptService.encrypt(registerParam.getPassword()));
 
-        UserData userData = userService.save(user).map(User::toData).get();
+        UserData userData = userService.save(user).map(User::toData).orElseThrow(ResourceNotFoundException::new);
         return ResponseEntity.status(201).body(userResponse(userData, jwtService.toToken(user)));
     }
 
-    @RequestMapping(path = "/users/login", method = POST)
+    @PostMapping(path = "/filter")
+    public ResponseEntity filterUsers() {
+        List<User> userList = userService.filter();
+        return ResponseEntity.ok(this.userResponse(userList));
+    }
+
+    @PostMapping(path = "/login")
     public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam, BindingResult bindingResult) {
         Optional<User> optional = userService.findByUsername(loginParam.getUsername());
         if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
@@ -84,6 +93,16 @@ public class UsersApi {
         if (bindingResult.hasErrors()) {
             throw new InvalidRequestException(bindingResult);
         }
+    }
+
+    private Map<String, List> userResponse(List<User> users) {
+        List<UserData> params = users.stream()
+                .map(User::toData)
+                .collect(Collectors.toList());
+
+        return new HashMap<String, List>() {{
+            put("users", params);
+        }};
     }
 
     private Map<String, Object> userResponse(UserData userData, String token) {
