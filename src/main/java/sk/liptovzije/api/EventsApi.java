@@ -41,8 +41,8 @@ public class EventsApi {
                                       @AuthenticationPrincipal User user) {
         Event event = this.paramToEvent(user, newEvent);
 
-        return this.eventService.save(event)
-                .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
+        return this.eventService.create(event)
+                .map(storedEvent -> ResponseEntity.ok(this.eventResponse(storedEvent)))
                 .orElseThrow(InternalError::new);
     }
 
@@ -77,6 +77,7 @@ public class EventsApi {
 
     private Event paramToEvent(User owner, EventParam param) {
         return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
+                .placeId(param.getPlaceId())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())
                 .endDate(param.getEndDate())
@@ -124,7 +125,7 @@ class EventParam {
         this.id        = domainEvent.getId();
         this.placeId   = domainEvent.getPlaceId();
         this.ownerId   = domainEvent.getOwnerId();
-        this.title   = domainEvent.getHeading();
+        this.title     = domainEvent.getTitle();
         this.content   = domainEvent.getContent();
         this.thumbnail = domainEvent.getThumbnail();
         this.startDate = domainEvent.getStartDate().toDate().getTime();

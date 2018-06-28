@@ -62,7 +62,7 @@
 //        when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
 //        when(userService.findByEmail(eq(email))).thenReturn(Optional.empty());
 //        when(userService.findById(eq(id))).thenReturn(Optional.of(user));
-//        when(userService.save(any())).thenReturn(Optional.of(user));
+//        when(userService.create(any())).thenReturn(Optional.of(user));
 //
 //        given()
 //            .contentType("application/json")
@@ -75,7 +75,7 @@
 //            .body("user.username", equalTo(username))
 //            .body("user.token", equalTo("123"));
 //
-//        verify(userService).save(any());
+//        verify(userService).create(any());
 //    }
 //
 //    @Test
@@ -94,7 +94,7 @@
 //        when(userService.findByUsername(eq(username))).thenReturn(Optional.empty());
 //        when(userService.findByEmail(any())).thenReturn(Optional.empty());
 //        when(userService.findById(eq(id))).thenReturn(Optional.of(user));
-//        when(userService.save(any())).thenReturn(Optional.of(user));
+//        when(userService.create(any())).thenReturn(Optional.of(user));
 //
 //        given()
 //                .contentType("application/json")
@@ -107,7 +107,7 @@
 //                .body("user.username", equalTo(username))
 //                .body("user.token", equalTo("123"));
 //
-//        verify(userService).save(any());
+//        verify(userService).create(any());
 //    }
 //
 //    @Test

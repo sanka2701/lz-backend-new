@@ -36,7 +36,7 @@ public class UserService implements IUserService {
     @Override
     public Optional<User> save(User user) {
 //        try {
-//            sessionFactory.getCurrentSession().save(user);
+//            sessionFactory.getCurrentSession().create(user);
 //        }  catch (Exception e) {
 //            e.printStackTrace();
 //        }

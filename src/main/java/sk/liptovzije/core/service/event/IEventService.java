@@ -12,7 +12,7 @@ public interface IEventService {
 
     void approve (long id);
 
-    Optional<Event> save (Event event);
+    Optional<Event> create(Event event);
 
     Optional<Event> update (Event event);
 

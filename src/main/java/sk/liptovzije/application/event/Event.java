@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import sk.liptovzije.application.post.Post;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
 
@@ -14,23 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Entity
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "events")
-public class Event {
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id")
-    private Long id;
-
-    @Column(name = "owner")
-    private Long ownerId;
-
+public class Event extends Post {
     @Column(name = "place")
     private Long placeId;
-
-    @Column(name = "heading")
-    private String heading;
 
     @Convert(converter = LocalDatePersistenceConverter.class)
     @Column(name = "start_date")
@@ -48,23 +37,19 @@ public class Event {
     @Column(name = "end_time")
     private LocalTime endTime;
 
-    @Column(name = "thumbnail")
-    private String thumbnail;
-
-    @Column(name = "content")
-    private String content;
-
     @Column(name = "approved")
     private Boolean approved;
 
-    private Event(){}
+    private Event(){
+        super();
+    }
 
     public static class Builder {
 
         private Long id;
         private Long placeId;
         private Long ownerId;
-        private String heading;
+        private String title;
         private LocalDate startDate;
         private LocalTime startTime;
         private LocalDate endDate;
@@ -76,9 +61,9 @@ public class Event {
         // todo: remove, just for offline testing purposes
         private static AtomicInteger idGenerator=new AtomicInteger();
 
-        public Builder(long ownerId, String heading, String content) {
+        public Builder(long ownerId, String title, String content) {
             this.ownerId = ownerId;
-            this.heading = heading;
+            this.title = title;
             this.content = content;
             this.approved = false;
         }
@@ -151,7 +136,7 @@ public class Event {
 
             event.setPlaceId(placeId);
             event.setOwnerId(ownerId);
-            event.setHeading(heading);
+            event.setTitle(title);
             event.setStartDate(startDate);
             event.setStartTime(startTime);
             event.setEndDate(endDate);

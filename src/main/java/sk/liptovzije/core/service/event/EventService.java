@@ -47,7 +47,7 @@ public class EventService implements IEventService {
     }
 
     @Override
-    public Optional<Event> save(Event event) {
+    public Optional<Event> create(Event event) {
         this.eventRepo.add(event);
 
         return Optional.ofNullable(event);
@@ -98,9 +98,9 @@ public class EventService implements IEventService {
                         fitsFilter = fitsFilter && event.getOwnerId().equals(filter.getOwnerId());
                     }
 
-                    if (filter.getHeading() != null) {
-                        String normalizedName  = StringUtils.stripAccents(event.getHeading()).toLowerCase();
-                        String normalizedQuery = StringUtils.stripAccents(filter.getHeading()).toLowerCase();
+                    if (filter.getTitle() != null) {
+                        String normalizedName  = StringUtils.stripAccents(event.getTitle()).toLowerCase();
+                        String normalizedQuery = StringUtils.stripAccents(filter.getTitle()).toLowerCase();
                         fitsFilter = fitsFilter && (normalizedName.contains(normalizedQuery)
                                 || FuzzySearch.ratio(normalizedName, normalizedQuery) > FUZZY_SCORE_TRESHOLD);
                     }

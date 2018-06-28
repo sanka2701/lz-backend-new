@@ -11,7 +11,7 @@ import org.joda.time.LocalTime;
 @NoArgsConstructor
 public class EventFilter {
     private Long ownerId;
-    private String heading;
+    private String title;
     private LocalDate startDate;
     private LocalTime startTime;
     private LocalDate endDate;
