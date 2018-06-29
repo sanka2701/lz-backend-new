@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(path = "/articles")
@@ -73,6 +74,10 @@ public class ArticleApi {
                 .build();
     }
 
+    private Map<String, List> articleResponse(Article article) {
+        return articleListResponse(Stream.of(article).collect(Collectors.toList()));
+    }
+
     private Map<String, List> articleListResponse(List<Article> articles){
         List<ArticleParam> params = articles.stream()
                 .map(ArticleParam::new)
@@ -80,12 +85,6 @@ public class ArticleApi {
 
         return new HashMap<String, List>() {{
             put("articles", params);
-        }};
-    }
-
-    private Map<String, Object> articleResponse(Article article) {
-        return new HashMap<String, Object>() {{
-            put("article", new ArticleParam(article));
         }};
     }
 }

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(path = "/events")
@@ -87,6 +88,10 @@ public class EventsApi {
                 .build();
     }
 
+    private Map<String, List> eventResponse(Event event) {
+        return eventListResponse(Stream.of(event).collect(Collectors.toList()));
+    }
+
     private Map<String, List> eventListResponse(List<Event> events){
         List<EventParam> params = events.stream()
                 .map(EventParam::new)
@@ -94,12 +99,6 @@ public class EventsApi {
 
         return new HashMap<String, List>() {{
             put("events", params);
-        }};
-    }
-
-    private Map<String, Object> eventResponse(Event event) {
-        return new HashMap<String, Object>() {{
-            put("event", new EventParam(event));
         }};
     }
 }

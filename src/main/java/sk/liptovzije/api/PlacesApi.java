@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -33,7 +34,7 @@ public class PlacesApi {
     @GetMapping("/id")
     public ResponseEntity getPlaceById(@RequestParam("id") long id) {
         Place requestedPlace = this.placeService.getById(id).get();
-        return ResponseEntity.ok(singlePlaceResponse(requestedPlace));
+        return ResponseEntity.ok(placeResponse(requestedPlace));
     }
 
     @GetMapping()
@@ -45,9 +46,10 @@ public class PlacesApi {
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
         //todo: check binding
+        //todo: check if this place already exists first
         Place place = new Place(null, null, newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
         Place storedPlace = this.placeService.save(place).orElseThrow(InternalError::new);
-        return ResponseEntity.ok(singlePlaceResponse(storedPlace));
+        return ResponseEntity.ok(placeResponse(storedPlace));
     }
 
     @DeleteMapping
@@ -61,10 +63,8 @@ public class PlacesApi {
         return null;
     }
 
-    private Map<String, Object> singlePlaceResponse(Place place){
-        return new HashMap<String, Object>() {{
-            put("place", new PlaceParam(place));
-        }};
+    private Map<String, List> placeResponse(Place place){
+        return placeListResponse(Stream.of(place).collect(Collectors.toList()));
     }
 
     private Map<String, List> placeListResponse(List<Place> places){

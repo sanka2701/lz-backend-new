@@ -40,7 +40,7 @@ public class Place {
     private Boolean approved;
 
     // todo: remove, just for offline testing purposes
-    private static AtomicInteger idGenerator=new AtomicInteger();
+    private static AtomicInteger idGenerator=new AtomicInteger(19);
 
     public Place(Long id, Long ownerId, String name, String address, double longitude, double latitude) {
         this.id = id!= null ? id : (long) idGenerator.incrementAndGet();
