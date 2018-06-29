@@ -119,6 +119,7 @@ class EventParam {
     private Long startTime;
     private Long endDate;
     private Long endTime;
+    private Boolean approved;
 
     public EventParam(Event domainEvent) {
         this.id        = domainEvent.getId();
@@ -128,8 +129,9 @@ class EventParam {
         this.content   = domainEvent.getContent();
         this.thumbnail = domainEvent.getThumbnail();
         this.startDate = domainEvent.getStartDate().toDate().getTime();
-        this.startTime = domainEvent.getStartTime().toDateTimeToday().getMillis();
         this.endDate   = domainEvent.getEndDate().toDate().getTime();
-        this.endTime   = domainEvent.getEndTime().toDateTimeToday().getMillis();
+        this.startTime = (long) domainEvent.getStartTime().getMillisOfDay();
+        this.endTime   = (long) domainEvent.getEndTime().getMillisOfDay();
+        this.approved  = domainEvent.getApproved();
     }
 }
