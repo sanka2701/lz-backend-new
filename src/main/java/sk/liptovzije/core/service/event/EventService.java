@@ -42,8 +42,33 @@ public class EventService implements IEventService {
                 .approved(false)
                 .build();
 
+        Event event3 = new Event.Builder(0, "Varkanie vsetkoho fajneho", evntContent)
+                .startDate(new LocalDate(1529749495911L))
+                .startTime(new LocalTime(3600000L))
+                .endDate(new LocalDate(1530267895911L))
+                .endTime(new LocalTime(64800000L))
+                .placeId(1)
+                .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/polievkovy-festival-1024x576.jpg")
+                .approved(true)
+                .build();
+
         eventRepo.add(event1);
         eventRepo.add(event2);
+        eventRepo.add(event3);
+
+        for (int i =0; i < 15; i++) {
+            eventRepo.add(
+                    new Event.Builder(0, "Pltkovanie", evntContent)
+                    .startDate(new LocalDate(1529749495911L))
+                    .startTime(new LocalTime(3600000L))
+                    .endDate(new LocalDate(1530267895911L))
+                    .endTime(new LocalTime(64800000L))
+                    .placeId(0)
+                    .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/mjf18-1-1024x724.png")
+                    .approved(true)
+                    .build()
+            );
+        }
     }
 
     @Override
