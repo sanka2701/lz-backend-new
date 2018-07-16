@@ -1,5 +1,7 @@
 package sk.liptovzije.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +16,7 @@ import sk.liptovzije.core.service.place.IPlaceService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,7 +50,7 @@ public class PlacesApi {
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
         //todo: check binding
         //todo: check if this place already exists first
-        Place place = new Place(null, null, newPlace.getLabel(), newPlace.getAddress(), newPlace.getLon(), newPlace.getLat());
+        Place place = newPlace.toDO();
         Place storedPlace = this.placeService.save(place).orElseThrow(InternalError::new);
         return ResponseEntity.ok(placeResponse(storedPlace));
     }
@@ -92,9 +95,26 @@ class PlaceParam {
     @NotNull(message = "can't be empty")
     private Double lat;
 
+    static PlaceParam fromJson(String json) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        TypeFactory typeFactory = objectMapper.getTypeFactory();
+        return objectMapper.readValue(json, typeFactory.constructType(PlaceParam.class));
+    }
+
+    Place toDO() {
+        Place place = new Place();
+        place.setId(getId());
+        place.setLabel(getLabel());
+        place.setAddress(getAddress());
+        place.setLongitude(getLon());
+        place.setLatitude(getLat());
+
+        return place;
+    }
+
     PlaceParam(Place domainPlace) {
         this.id = domainPlace.getId();
-        this.label = domainPlace.getName();
+        this.label = domainPlace.getLabel();
         this.address = domainPlace.getAddress();
         this.lon = domainPlace.getLongitude();
         this.lat = domainPlace.getLatitude();

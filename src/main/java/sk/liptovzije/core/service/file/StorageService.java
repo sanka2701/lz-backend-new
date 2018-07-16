@@ -1,11 +1,11 @@
 package sk.liptovzije.core.service.file;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.utils.exception.StorageException;
 import sk.liptovzije.utils.exception.StorageFileNotFoundException;
@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -30,7 +31,9 @@ public class StorageService implements IStorageService {
 
     @Override
     public String store(MultipartFile file) {
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String filename = UUID.randomUUID().toString().replace("-", "") + "." + fileExtension;
+
         Path currentPath;
         try {
             currentPath = resolveCurrentDirectory();

@@ -56,19 +56,19 @@ public class EventService implements IEventService {
         eventRepo.add(event2);
         eventRepo.add(event3);
 
-        for (int i =0; i < 15; i++) {
-            eventRepo.add(
-                    new Event.Builder(0, "Pltkovanie", evntContent)
-                    .startDate(new LocalDate(1529749495911L))
-                    .startTime(new LocalTime(3600000L))
-                    .endDate(new LocalDate(1530267895911L))
-                    .endTime(new LocalTime(64800000L))
-                    .placeId(0)
-                    .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/mjf18-1-1024x724.png")
-                    .approved(true)
-                    .build()
-            );
-        }
+//        for (int i =0; i < 1000; i++) {
+//            eventRepo.add(
+//                    new Event.Builder(0, "Pltkovanie", evntContent)
+//                    .startDate(new LocalDate(1529749495911L))
+//                    .startTime(new LocalTime(3600000L))
+//                    .endDate(new LocalDate(1530267895911L))
+//                    .endTime(new LocalTime(64800000L))
+//                    .placeId(0)
+//                    .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/mjf18-1-1024x724.png")
+//                    .approved(true)
+//                    .build()
+//            );
+//        }
     }
 
     @Override

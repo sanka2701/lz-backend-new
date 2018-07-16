@@ -24,8 +24,8 @@ public class Place {
     @Column(name = "owner")
     private Long ownerId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "label")
+    private String label;
 
     @Column(name = "address")
     private String address;
@@ -42,10 +42,10 @@ public class Place {
     // todo: remove, just for offline testing purposes
     private static AtomicInteger idGenerator=new AtomicInteger(19);
 
-    public Place(Long id, Long ownerId, String name, String address, double longitude, double latitude) {
+    public Place(Long id, Long ownerId, String label, String address, double longitude, double latitude) {
         this.id = id!= null ? id : (long) idGenerator.incrementAndGet();
         this.ownerId = ownerId;
-        this.name = name;
+        this.label = label;
         this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;

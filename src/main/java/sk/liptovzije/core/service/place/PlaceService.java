@@ -7,7 +7,6 @@ import sk.liptovzije.application.place.Place;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,7 +56,7 @@ public class PlaceService implements IPlaceService {
     public List<Place> getBySubstring(String subName) {
         return this.placesRepo.stream()
                 .filter(place -> {
-                    String normalizedName  = StringUtils.stripAccents(place.getName()).toLowerCase();
+                    String normalizedName  = StringUtils.stripAccents(place.getLabel()).toLowerCase();
                     String normalizedQuery = StringUtils.stripAccents(subName).toLowerCase();
                     return (normalizedName.contains(normalizedQuery)
                             || FuzzySearch.ratio(normalizedName, normalizedQuery) > FUZZY_SCORE_TRESHOLD);

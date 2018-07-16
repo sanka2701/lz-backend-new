@@ -1,5 +1,7 @@
 package sk.liptovzije.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,14 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.event.Event;
 import sk.liptovzije.application.event.EventFilter;
+import sk.liptovzije.application.place.Place;
 import sk.liptovzije.application.user.User;
+import sk.liptovzije.core.service.FileUrlBuilder;
 import sk.liptovzije.core.service.authorization.IAuthorizationService;
 import sk.liptovzije.core.service.event.IEventService;
+import sk.liptovzije.core.service.file.IStorageService;
+import sk.liptovzije.core.service.place.IPlaceService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,20 +35,53 @@ import java.util.stream.Stream;
 public class EventsApi {
 
     private IEventService eventService;
+    private IPlaceService placeService;
+    private IStorageService storageService;
     private IAuthorizationService authorizationService;
+    private FileUrlBuilder pathBuilder;
 
     @Autowired
     public EventsApi(
             IEventService eventService,
-            IAuthorizationService authorizationService ){
+            IPlaceService placeService,
+            IStorageService storageService,
+            IAuthorizationService authorizationService,
+            FileUrlBuilder pathBuilder){
         this.eventService = eventService;
+        this.placeService = placeService;
+        this.storageService = storageService;
         this.authorizationService = authorizationService;
+        this.pathBuilder = pathBuilder;
     }
 
     @PostMapping
-    public ResponseEntity createEvent(@Valid @RequestBody EventParam newEvent,
-                                      @AuthenticationPrincipal User user) {
+    public ResponseEntity createEvent(@RequestParam("event") String eventJson,
+                                      @RequestParam("place") String placeJson,
+                                      @RequestParam("thumbnail") MultipartFile thumbnail,
+                                      @RequestParam("fileUrls") String[] contentFileUrls,
+                                      @RequestParam("file") MultipartFile[] files,
+                                      @AuthenticationPrincipal User user
+    ) throws IOException {
+        EventParam newEvent = EventParam.fromJson(eventJson);
+        PlaceParam newPlace = PlaceParam.fromJson(placeJson);
         Event event = this.paramToEvent(user, newEvent);
+        Place place = newPlace.toDO();
+
+        if(contentFileUrls.length != files.length) {
+            throw new IllegalArgumentException("List of files and corresponding urls has to be equal size");
+        }
+
+        Map<String, String> urlMap = new HashMap<>();
+        for(int i = 0; i < files.length; i++) {
+            urlMap.put(contentFileUrls[i], pathBuilder.toServerUrl(storageService.store(files[i])));
+        }
+
+        long placeId = place.getId() != null ? place.getId() : placeService.save(place)
+                .orElseThrow(InternalError::new)
+                .getId();
+        event.setPlaceId(placeId);
+        event.setContent(pathBuilder.replaceUrls(newEvent.getContent(), urlMap));
+        event.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
 
         return this.eventService.create(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(storedEvent)))
@@ -120,6 +161,12 @@ class EventParam {
     private Long endDate;
     private Long endTime;
     private Boolean approved;
+
+    public static EventParam fromJson(String json) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        TypeFactory typeFactory = objectMapper.getTypeFactory();
+        return objectMapper.readValue(json, typeFactory.constructType(EventParam.class));
+    }
 
     public EventParam(Event domainEvent) {
         this.id        = domainEvent.getId();
