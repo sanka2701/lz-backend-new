@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class DefaultFileUrlBuilder implements FileUrlBuilder{
@@ -27,6 +28,11 @@ public class DefaultFileUrlBuilder implements FileUrlBuilder{
 
     @Override
     public String replaceUrls(String content, Map<String, String> urlMap) {
-        return null;
+        String replaced = urlMap.entrySet()
+                .stream()
+                .map(entry -> (Function<String,String>) s->s.replace(entry.getKey(), entry.getValue()))
+                .reduce(Function.identity(), Function::andThen)
+                .apply(content);
+        return replaced;
     }
 }

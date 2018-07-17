@@ -113,17 +113,17 @@ public class Event extends Post {
             return this;
         }
 
-        public Builder placeId(long placeId){
+        public Builder placeId(Long placeId){
             this.placeId = placeId;
             return this;
         }
 
-        public Builder approved(boolean approved){
+        public Builder approved(Boolean approved){
             this.approved = approved;
             return this;
         }
 
-        public Builder id(long id){
+        public Builder id(Long id){
             this.id = id;
             return this;
         }

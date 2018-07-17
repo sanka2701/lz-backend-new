@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,21 +59,20 @@ public class EventsApi {
     public ResponseEntity createEvent(@RequestParam("event") String eventJson,
                                       @RequestParam("place") String placeJson,
                                       @RequestParam("thumbnail") MultipartFile thumbnail,
-                                      @RequestParam("fileUrls") String[] contentFileUrls,
-                                      @RequestParam("file") MultipartFile[] files,
-                                      @AuthenticationPrincipal User user
-    ) throws IOException {
+                                      @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
+                                      @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                      @AuthenticationPrincipal User user) throws IOException {
         EventParam newEvent = EventParam.fromJson(eventJson);
         PlaceParam newPlace = PlaceParam.fromJson(placeJson);
         Event event = this.paramToEvent(user, newEvent);
         Place place = newPlace.toDO();
 
-        if(contentFileUrls.length != files.length) {
+        if(contentFileUrls != null && files != null && contentFileUrls.length != files.length) {
             throw new IllegalArgumentException("List of files and corresponding urls has to be equal size");
         }
 
         Map<String, String> urlMap = new HashMap<>();
-        for(int i = 0; i < files.length; i++) {
+        for(int i = 0; files != null && i < files.length; i++) {
             urlMap.put(contentFileUrls[i], pathBuilder.toServerUrl(storageService.store(files[i])));
         }
 
@@ -89,19 +89,20 @@ public class EventsApi {
     }
 
     @PostMapping("/update")
-    public ResponseEntity updateEvent(@Valid @RequestBody EventParam updatedEvent,
-                                      @AuthenticationPrincipal User user) {
-        Event event = this.paramToEvent(user, updatedEvent);
+    public ResponseEntity updateEvent(@RequestParam("event") String eventJson,
+                                      @RequestParam(value = "place", required = false) String placeJson,
+                                      @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
+                                      @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
+                                      @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                      @AuthenticationPrincipal User user) throws IOException {
+        EventParam newEvent = EventParam.fromJson(eventJson);
+        PlaceParam newPlace = PlaceParam.fromJson(placeJson);
+        Event event = this.paramToEvent(user, newEvent);
+        Place place = newPlace.toDO();
 
         return this.eventService.update(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
                 .orElseThrow(ResourceNotFoundException::new);
-    }
-
-    @PostMapping("/approve")
-    public ResponseEntity approveEvent(@RequestParam("id") long id) {
-        this.eventService.approve(id);
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping()

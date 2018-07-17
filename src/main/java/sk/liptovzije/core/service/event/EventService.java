@@ -27,7 +27,7 @@ public class EventService implements IEventService {
                 .startTime(new LocalTime(3600000L))
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
-                .placeId(0)
+                .placeId(0L)
                 .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/mjf18-1-1024x724.png")
                 .approved(true)
                 .build();
@@ -37,7 +37,7 @@ public class EventService implements IEventService {
                 .startTime(new LocalTime(3600000L))
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
-                .placeId(1)
+                .placeId(1L)
                 .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/polievkovy-festival-1024x576.jpg")
                 .approved(false)
                 .build();
@@ -47,7 +47,7 @@ public class EventService implements IEventService {
                 .startTime(new LocalTime(3600000L))
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
-                .placeId(1)
+                .placeId(1L)
                 .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/polievkovy-festival-1024x576.jpg")
                 .approved(true)
                 .build();
@@ -81,20 +81,6 @@ public class EventService implements IEventService {
     @Override
     public void delete(long id) {
         this.eventRepo.removeIf(event -> event.getId().equals(id));
-    }
-
-    @Override
-    public void approve(long id) {
-        Event approveEvent = this.eventRepo.stream()
-                .filter(event -> event.getId().equals(id))
-                .reduce((a, b) -> {
-                    throw new IllegalStateException("Multiple Events found: " + a + ", " + b);
-                })
-                .orElse(null);
-
-        if(approveEvent != null) {
-            approveEvent.setApproved(true);
-        }
     }
 
     @Override

@@ -15,6 +15,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static java.util.Arrays.asList;
 import static sk.liptovzije.application.user.Roles.ADMIN;
+import static sk.liptovzije.application.user.Roles.TRUSTED_USER;
+import static sk.liptovzije.application.user.Roles.USER;
 
 @Configuration
 @EnableWebSecurity
@@ -40,14 +42,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, "/articles/filter").permitAll()
             .antMatchers(HttpMethod.GET, "/articles").permitAll()
 
-            .antMatchers(HttpMethod.POST, "/events/approve").hasRole(ADMIN)
-            .antMatchers(HttpMethod.POST, "/users/filter").hasRole(ADMIN)
-            .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
+            .antMatchers(HttpMethod.DELETE, "/events").hasRole(ADMIN)
+            .antMatchers(HttpMethod.POST, "/events/update").hasAnyRole(ADMIN, USER, TRUSTED_USER)
             .antMatchers(HttpMethod.POST, "/events/filter").permitAll()
+            .antMatchers(HttpMethod.GET, "/events").permitAll()
+
+            .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
+            .antMatchers(HttpMethod.POST, "/users/filter").hasRole(ADMIN)
+
             .antMatchers(HttpMethod.GET, "/img/**").permitAll()
+
             .antMatchers(HttpMethod.GET, "/places").permitAll()
             .antMatchers(HttpMethod.GET, "/places/id").permitAll()
-            .antMatchers(HttpMethod.GET, "/events").permitAll()
             .anyRequest().authenticated();
 
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
