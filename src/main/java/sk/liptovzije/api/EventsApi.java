@@ -34,25 +34,24 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping(path = "/events")
 public class EventsApi {
-
     private IEventService eventService;
     private IPlaceService placeService;
     private IStorageService storageService;
-    private IAuthorizationService authorizationService;
     private FileUrlBuilder pathBuilder;
+    private IAuthorizationService authorizationService;
 
     @Autowired
     public EventsApi(
             IEventService eventService,
             IPlaceService placeService,
             IStorageService storageService,
-            IAuthorizationService authorizationService,
-            FileUrlBuilder pathBuilder){
+            FileUrlBuilder pathBuilder,
+            IAuthorizationService authorizationService){
         this.eventService = eventService;
         this.placeService = placeService;
         this.storageService = storageService;
-        this.authorizationService = authorizationService;
         this.pathBuilder = pathBuilder;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping
@@ -67,14 +66,7 @@ public class EventsApi {
         Event event = this.paramToEvent(user, newEvent);
         Place place = newPlace.toDO();
 
-        if(contentFileUrls != null && files != null && contentFileUrls.length != files.length) {
-            throw new IllegalArgumentException("List of files and corresponding urls has to be equal size");
-        }
-
-        Map<String, String> urlMap = new HashMap<>();
-        for(int i = 0; files != null && i < files.length; i++) {
-            urlMap.put(contentFileUrls[i], pathBuilder.toServerUrl(storageService.store(files[i])));
-        }
+        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
 
         long placeId = place.getId() != null ? place.getId() : placeService.save(place)
                 .orElseThrow(InternalError::new)
@@ -96,9 +88,22 @@ public class EventsApi {
                                       @RequestParam(value = "file", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam newEvent = EventParam.fromJson(eventJson);
-        PlaceParam newPlace = PlaceParam.fromJson(placeJson);
         Event event = this.paramToEvent(user, newEvent);
-        Place place = newPlace.toDO();
+
+        if(placeJson != null) {
+            PlaceParam newPlace = PlaceParam.fromJson(placeJson);
+            Place place = newPlace.toDO();
+            long placeId = place.getId() != null ? place.getId() : placeService.save(place)
+                    .orElseThrow(InternalError::new)
+                    .getId();
+            event.setPlaceId(placeId);
+        }
+        if (thumbnail != null) {
+            event.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
+        }
+
+        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
+        event.setContent(pathBuilder.replaceUrls(newEvent.getContent(), urlMap));
 
         return this.eventService.update(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
@@ -120,6 +125,7 @@ public class EventsApi {
 
     private Event paramToEvent(User owner, EventParam param) {
         return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
+                .id(param.getId())
                 .placeId(param.getPlaceId())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())

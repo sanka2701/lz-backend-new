@@ -26,6 +26,7 @@ public class PlaceService implements IPlaceService {
 
     @Override
     public Optional<Place> save(Place place) {
+        place.setId((long)this.placesRepo.size());
         this.placesRepo.add(place);
 
         return Optional.ofNullable(place);
