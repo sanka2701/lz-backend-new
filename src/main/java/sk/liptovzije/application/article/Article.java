@@ -42,7 +42,7 @@ public class Article extends Post {
             return this;
         }
 
-        public Builder id(long id){
+        public Builder id(Long id){
             this.id = id;
             return this;
         }
