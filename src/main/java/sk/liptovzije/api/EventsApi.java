@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -169,13 +168,13 @@ class EventParam {
     private Long endTime;
     private Boolean approved;
 
-    public static EventParam fromJson(String json) throws IOException {
+    static EventParam fromJson(String json) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         TypeFactory typeFactory = objectMapper.getTypeFactory();
         return objectMapper.readValue(json, typeFactory.constructType(EventParam.class));
     }
 
-    public EventParam(Event domainEvent) {
+    EventParam(Event domainEvent) {
         this.id        = domainEvent.getId();
         this.placeId   = domainEvent.getPlaceId();
         this.ownerId   = domainEvent.getOwnerId();

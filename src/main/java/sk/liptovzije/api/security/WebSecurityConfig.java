@@ -35,6 +35,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeRequests()
+
+            .antMatchers(HttpMethod.POST, "/potw").hasRole(ADMIN)
+            .antMatchers(HttpMethod.DELETE, "/potw").hasRole(ADMIN)
+            .antMatchers(HttpMethod.POST, "/potw/update").hasRole(ADMIN)
+            .antMatchers(HttpMethod.GET, "/potw/list").permitAll()
+            .antMatchers(HttpMethod.GET, "/potw").permitAll()
+
             .antMatchers(HttpMethod.OPTIONS).permitAll()
             .antMatchers(HttpMethod.POST, "/articles").hasRole(ADMIN)
             .antMatchers(HttpMethod.DELETE, "/articles").hasRole(ADMIN)
