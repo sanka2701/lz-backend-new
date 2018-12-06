@@ -8,6 +8,8 @@ import org.joda.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
@@ -17,6 +19,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Table(name = "weekly_photo")
 public class WeeklyPhoto {
+    @Id
+    @GeneratedValue
     @Column(name = "id")
     private Long id;
 
@@ -29,9 +33,9 @@ public class WeeklyPhoto {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "photo-url")
+    @Column(name = "photo_url")
     private String photoUrl;
 
-    @Column(name = "date-added")
+    @Column(name = "date_added")
     private LocalDate dateAdded;
 }

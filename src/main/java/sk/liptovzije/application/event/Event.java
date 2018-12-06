@@ -26,7 +26,7 @@ public class Event extends Post {
     private LocalDate startDate;
 
     @Convert(converter = LocalTimePersistenceConverter.class)
-    @Column(name = "end_time")
+    @Column(name = "start_time")
     private LocalTime startTime;
 
     @Convert(converter = LocalDatePersistenceConverter.class)

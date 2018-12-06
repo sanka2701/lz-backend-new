@@ -55,14 +55,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET, "/events").permitAll()
 
             .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
-            .antMatchers(HttpMethod.POST, "/users/filter").hasRole(ADMIN)
+            .antMatchers(HttpMethod.POST, "/users/filter").permitAll()
+//            .antMatchers(HttpMethod.POST, "/users/filter").hasRole(ADMIN)
 
             .antMatchers(HttpMethod.GET, "/img/**").permitAll()
 
             .antMatchers(HttpMethod.GET, "/places").permitAll()
             .antMatchers(HttpMethod.GET, "/places/id").permitAll()
+
+            //todo: This is just for inmemory H2 DB -> remove in production
+            .antMatchers("/h2-console/**").permitAll()
             .anyRequest().authenticated();
 
+        // todo: Frame options are needed to prevent a browser to load HTML page in an <iframe> or a <frame> tag and for H2 Console page to load it needs to be disabled
+        http.headers().frameOptions().disable();
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
