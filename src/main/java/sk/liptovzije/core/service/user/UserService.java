@@ -1,21 +1,13 @@
 package sk.liptovzije.core.service.user;
 
-import com.mysema.query.jpa.hibernate.HibernateQuery;
+import com.querydsl.jpa.hibernate.HibernateQueryFactory;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.user.QUser;
-import sk.liptovzije.application.user.Roles;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.core.service.encrypt.IEncryptService;
-
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +16,6 @@ import java.util.Optional;
 public class UserService implements IUserService {
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    public UserService(){
-//        User admin = new User("admin@lz.sk", "admin", "admin");
-//        admin.setRole(Roles.ROLE_ADMIN);
-//        this.save(admin);
-    }
 
     @Override
     public Optional<User> save(User user) {
@@ -44,43 +29,52 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Optional<User> update(User user) {
-        // todo: not yet implemented
+    public Optional<User> update(User updatedUser) {
+//        todo: test if works without specifying all the columns, probably remove the return
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QUser user = QUser.user;
+        query.update(user).where(user.id.eq(updatedUser.getId())).execute();
+
         return Optional.empty();
     }
 
     @Override
     public List<User> filter() {
-        // todo: not yet implemented
-        return new ArrayList<>();
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QUser user = QUser.user;
+        return query.selectFrom(user).fetch();
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        HibernateQuery query = new HibernateQuery(entityManager.unwrap(Session.class));
-
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QUser user = QUser.user;
-        User result = query.from(user)
+        User result = query.selectFrom(user)
                 .where(user.id.eq(id))
-                .uniqueResult(user);
+                .fetchOne();
 
         return Optional.ofNullable(result);
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        HibernateQuery query = new HibernateQuery(entityManager.unwrap(Session.class));
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QUser user = QUser.user;
-        User result = query.from(user)
+        User result = query.selectFrom(user)
                 .where(user.username.eq(username))
-                .uniqueResult(user);
+                .fetchOne();
 
         return Optional.ofNullable(result);
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
-        // todo: not yet implemented
-        return Optional.empty();
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QUser user = QUser.user;
+        User result = query.selectFrom(user)
+                .where(user.email.eq(email))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 }
