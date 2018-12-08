@@ -64,4 +64,9 @@ public class PlaceService implements IPlaceService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Place> getAll() {
+        return placesRepo;
+    }
 }

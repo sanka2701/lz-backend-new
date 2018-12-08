@@ -62,6 +62,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             .antMatchers(HttpMethod.GET, "/places").permitAll()
             .antMatchers(HttpMethod.GET, "/places/id").permitAll()
+            .antMatchers(HttpMethod.GET, "/places/list").permitAll()
+
+            .antMatchers(HttpMethod.GET, "/eventtag").permitAll()
 
             //todo: This is just for inmemory H2 DB -> remove in production
             .antMatchers("/h2-console/**").permitAll()

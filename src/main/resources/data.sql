@@ -3,3 +3,9 @@ insert into users values(2,'2017-01-11','jozo@lz.sk','jozo','spity','password','
 insert into users values(3,'2017-05-20','fero@lz.sk','fero','prdel','password','ROLE_USER','ferou');
 insert into users values(4,'2018-10-07','sebastian@lz.sk','sebo','vypil','password','ROLE_USER','sebou');
 insert into users values(5,'2018-11-22','bororo@lz.sk','borak','zabludil','password','ROLE_USER','bororou');
+
+
+insert into event_tag values(1,'Sport');
+insert into event_tag values(2,'Kultura');
+insert into event_tag values(3,'Deti');
+insert into event_tag values(4,'Alkohol');

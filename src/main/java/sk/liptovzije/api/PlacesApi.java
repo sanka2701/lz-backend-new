@@ -40,6 +40,12 @@ public class PlacesApi {
         return ResponseEntity.ok(placeResponse(requestedPlace));
     }
 
+    @GetMapping("/list")
+    public ResponseEntity listPlaces() {
+        List<Place> listedPlaces = this.placeService.getAll();
+        return ResponseEntity.ok(placeListResponse(listedPlaces));
+    }
+
     @GetMapping()
     public ResponseEntity listPlacesByName(@RequestParam("subname") String subname) {
         List<Place> listedPlaces = this.placeService.getBySubstring(subname);

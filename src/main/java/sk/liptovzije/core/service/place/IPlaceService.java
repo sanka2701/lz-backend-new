@@ -15,4 +15,6 @@ public interface IPlaceService {
     Optional<Place> getById(long id);
 
     List<Place> getBySubstring(String substring);
+
+    List<Place> getAll();
 }
