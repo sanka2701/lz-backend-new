@@ -61,8 +61,8 @@ public class PlacesApi {
         return ResponseEntity.ok(placeResponse(storedPlace));
     }
 
-    @DeleteMapping
-    public ResponseEntity deletePlace(@Valid @RequestBody long id, BindingResult bindingResult) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity deletePlace(@PathVariable("id") Long id) {
         this.placeService.delete(id);
         return ResponseEntity.ok().build();
     }

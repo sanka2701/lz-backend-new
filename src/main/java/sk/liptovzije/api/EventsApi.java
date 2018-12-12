@@ -157,6 +157,7 @@ class EventParam {
     private Long id;
     private Long placeId;
     private Long ownerId;
+    private Long[] tags;
     @NotBlank(message = "can't be empty")
     private String title;
     @NotBlank(message = "can't be empty")

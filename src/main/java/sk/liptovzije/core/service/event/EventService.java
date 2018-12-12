@@ -28,7 +28,7 @@ public class EventService implements IEventService {
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
                 .placeId(0L)
-                .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/mjf18-1-1024x724.png")
+                .thumbnail("http://localhost:8080/img/2018/6/17/b5d717eb5f994b4a804522249f2d17c1.jpg")
                 .approved(true)
                 .build();
 
@@ -38,7 +38,7 @@ public class EventService implements IEventService {
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
                 .placeId(1L)
-                .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/polievkovy-festival-1024x576.jpg")
+                .thumbnail("http://localhost:8080/img/2018/6/17/2067fa930572479eb3463e9bde7a5f51.jpg")
                 .approved(false)
                 .build();
 
@@ -48,7 +48,7 @@ public class EventService implements IEventService {
                 .endDate(new LocalDate(1530267895911L))
                 .endTime(new LocalTime(64800000L))
                 .placeId(1L)
-                .thumbnail("http://www.liptovzije.sk/wp-content/uploads/2018/06/polievkovy-festival-1024x576.jpg")
+                .thumbnail("http://localhost:8080/img/2018/6/17/4679cc8fb82945d9ba69c8258c454222.jpg")
                 .approved(true)
                 .build();
 
