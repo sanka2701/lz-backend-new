@@ -3,8 +3,8 @@ package sk.liptovzije.core.service.tag;
 import com.querydsl.jpa.hibernate.HibernateQueryFactory;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
-import sk.liptovzije.application.tag.EventTag;
-import sk.liptovzije.application.tag.QEventTag;
+import sk.liptovzije.application.tag.QTag;
+import sk.liptovzije.application.tag.Tag;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -19,7 +19,7 @@ public class TagService implements ITagService {
     private EntityManager entityManager;
 
     @Override
-    public Optional<EventTag> save(EventTag tag) {
+    public Optional<Tag> save(Tag tag) {
         try {
             entityManager.unwrap(Session.class).save(tag);
         } catch (Exception e) {
@@ -30,9 +30,10 @@ public class TagService implements ITagService {
     }
 
     @Override
-    public void update(EventTag updatedTag) {
+    public void update(Tag updatedTag) {
+        // todo return updated
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEventTag tag = QEventTag.eventTag;
+        QTag tag = QTag.tag;
         query.update(tag).where(tag.id.eq(updatedTag.getId())).execute();
     }
 
@@ -40,15 +41,15 @@ public class TagService implements ITagService {
     public void delete(long id) {
         //todo: remove category reference from every event where it is used
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEventTag tag = QEventTag.eventTag;
+        QTag tag = QTag.tag;
         query.delete(tag).where(tag.id.eq(id)).execute();
     }
 
     @Override
-    public Optional<EventTag> getById(long id) {
+    public Optional<Tag> getById(long id) {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEventTag tag = QEventTag.eventTag;
-        EventTag result = query.selectFrom(tag)
+        QTag tag = QTag.tag;
+        Tag result = query.selectFrom(tag)
                 .where(tag.id.eq(id))
                 .fetchOne();
 
@@ -56,10 +57,10 @@ public class TagService implements ITagService {
     }
 
     @Override
-    public Optional<EventTag> getByLabel(String label) {
+    public Optional<Tag> getByLabel(String label) {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEventTag tag = QEventTag.eventTag;
-        EventTag result = query.selectFrom(tag)
+        QTag tag = QTag.tag;
+        Tag result = query.selectFrom(tag)
                 .where(tag.label.eq(label))
                 .fetchOne();
 
@@ -67,9 +68,9 @@ public class TagService implements ITagService {
     }
 
     @Override
-    public List<EventTag> getAll() {
+    public List<Tag> getAll() {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEventTag tag = QEventTag.eventTag;
+        QTag tag = QTag.tag;
         return query.selectFrom(tag).fetch();
     }
 }

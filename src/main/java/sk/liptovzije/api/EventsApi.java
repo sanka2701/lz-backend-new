@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.event.Event;
 import sk.liptovzije.application.event.EventFilter;
 import sk.liptovzije.application.place.Place;
+import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.FileUrlBuilder;
 import sk.liptovzije.core.service.authorization.IAuthorizationService;
@@ -24,9 +25,13 @@ import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -125,6 +130,7 @@ public class EventsApi {
     private Event paramToEvent(User owner, EventParam param) {
         return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
                 .id(param.getId())
+                .tags(Arrays.stream(param.getTags()).map(TagParam::toDo).collect(Collectors.toSet()))
                 .placeId(param.getPlaceId())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())
@@ -157,7 +163,7 @@ class EventParam {
     private Long id;
     private Long placeId;
     private Long ownerId;
-    private Long[] tags;
+    private TagParam[] tags;
     @NotBlank(message = "can't be empty")
     private String title;
     @NotBlank(message = "can't be empty")
@@ -177,6 +183,7 @@ class EventParam {
 
     EventParam(Event domainEvent) {
         this.id        = domainEvent.getId();
+        this.tags      = domainEvent.getTags().stream().map(TagParam::new).toArray(TagParam[]::new);;
         this.placeId   = domainEvent.getPlaceId();
         this.ownerId   = domainEvent.getOwnerId();
         this.title     = domainEvent.getTitle();

@@ -6,10 +6,12 @@ import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import sk.liptovzije.application.post.Post;
+import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
 
 import javax.persistence.*;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
@@ -40,6 +42,24 @@ public class Event extends Post {
     @Column(name = "approved")
     private Boolean approved;
 
+    //todo: not working while saving
+//    @ManyToMany(cascade = {
+//            CascadeType.PERSIST,
+//            CascadeType.MERGE
+//    })
+//    @JoinTable(
+//            name = "event_tags",
+//            joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),
+//            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id")
+//    )
+    @OneToMany
+    @JoinTable(
+            name = "event_tags",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
+
     private Event(){
         super();
     }
@@ -57,9 +77,7 @@ public class Event extends Post {
         private String thumbnail;
         private String content;
         private Boolean approved;
-
-        // todo: remove, just for offline testing purposes
-        private static AtomicInteger idGenerator=new AtomicInteger();
+        private Set<Tag> tags;
 
         public Builder(long ownerId, String title, String content) {
             this.ownerId = ownerId;
@@ -128,12 +146,17 @@ public class Event extends Post {
             return this;
         }
 
+        public Builder tags(Set<Tag> tags){
+            this.tags = tags;
+            return this;
+        }
+
         public Event build() {
             Event event = new Event();
 
-            event.setId(id != null ? id :(long) idGenerator.incrementAndGet());
+            event.setId(id);
             event.setApproved(approved);
-
+            event.setTags(tags);
             event.setPlaceId(placeId);
             event.setOwnerId(ownerId);
             event.setTitle(title);

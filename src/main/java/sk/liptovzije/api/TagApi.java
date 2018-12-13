@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sk.liptovzije.application.tag.EventTag;
+import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.core.service.tag.ITagService;
 import sk.liptovzije.utils.exception.InvalidRequestException;
 
@@ -24,29 +24,29 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/eventtag")
-public class EventTagApi {
+public class TagApi {
     private ITagService tagService;
 
     @Autowired
-    public EventTagApi(ITagService tagService) {
+    public TagApi(ITagService tagService) {
         this.tagService = tagService;
     }
 
     @PostMapping
-    public ResponseEntity createTag(@Valid @RequestBody EventTagParam tagParam, BindingResult bindingResult) {
+    public ResponseEntity createTag(@Valid @RequestBody TagParam tagParam, BindingResult bindingResult) {
         checkInput(tagParam, bindingResult);
-        EventTag tag = tagParam.toDo();
-        EventTagParam response = tagService.save(tag).map(EventTagParam::new).orElseThrow(InternalError::new);
+        Tag tag = tagParam.toDo();
+        TagParam response = tagService.save(tag).map(TagParam::new).orElseThrow(InternalError::new);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity listTags() {
-        List<EventTag> userList = tagService.getAll();
+        List<Tag> userList = tagService.getAll();
         return ResponseEntity.ok(this.tagResponse(userList));
     }
 
-    private void checkInput(@Valid @RequestBody EventTagParam tagParam, BindingResult bindingResult) {
+    private void checkInput(@Valid @RequestBody TagParam tagParam, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new InvalidRequestException(bindingResult);
         }
@@ -59,9 +59,9 @@ public class EventTagApi {
         }
     }
 
-    private Map<String, List> tagResponse(List<EventTag> tags) {
-        List<EventTagParam> params = tags.stream()
-                .map(EventTagParam::new)
+    private Map<String, List> tagResponse(List<Tag> tags) {
+        List<TagParam> params = tags.stream()
+                .map(TagParam::new)
                 .collect(Collectors.toList());
 
         return new HashMap<String, List>() {{
@@ -73,18 +73,18 @@ public class EventTagApi {
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-class EventTagParam {
+class TagParam {
     private Long id;
     @NotBlank(message = "can't be empty")
     private String label;
 
-    EventTagParam(EventTag domainObject) {
+    public TagParam(Tag domainObject) {
         this.id = domainObject.getId();
         this.label = domainObject.getLabel();
     }
 
-    EventTag toDo() {
-        EventTag tag = new EventTag();
+    public Tag toDo() {
+        Tag tag = new Tag();
         tag.setId(this.id);
         tag.setLabel(this.label);
         return tag;

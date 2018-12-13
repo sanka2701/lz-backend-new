@@ -1,21 +1,21 @@
 package sk.liptovzije.core.service.tag;
 
 
-import sk.liptovzije.application.tag.EventTag;
+import sk.liptovzije.application.tag.Tag;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ITagService {
-    Optional<EventTag> save(EventTag tag);
+    Optional<Tag> save(Tag tag);
 
-    void update(EventTag updatedTag);
+    void update(Tag updatedTag);
 
     void delete(long id);
 
-    Optional<EventTag> getById(long id);
+    Optional<Tag> getById(long id);
 
-    Optional<EventTag> getByLabel(String label);
+    Optional<Tag> getByLabel(String label);
 
-    List<EventTag> getAll();
+    List<Tag> getAll();
 }

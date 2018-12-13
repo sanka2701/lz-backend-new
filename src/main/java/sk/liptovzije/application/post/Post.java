@@ -8,17 +8,19 @@ import sk.liptovzije.utils.LocalDatePersistenceConverter;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "Post")
 @Getter
 @Setter
 @EqualsAndHashCode
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "posts")
 public class Post {
     @Id
     @GeneratedValue
     @Column(name = "id")
     protected Long id;
 
-    @Column(name = "owner")
+    @Column(name = "owner", nullable = false)
     protected Long ownerId;
 
     @Column(name = "content")
