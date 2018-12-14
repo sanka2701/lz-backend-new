@@ -13,15 +13,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-@Table(name = "places")
+@Table(name = "place")
 public class Place {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "place_id")
     private Long id;
 
-    @Column(name = "owner")
+    @Column(name = "owner_id")
     private Long ownerId;
 
     @Column(name = "label")
@@ -39,11 +39,9 @@ public class Place {
     @Column(name = "approved")
     private Boolean approved;
 
-    // todo: remove, just for offline testing purposes
-    private static AtomicInteger idGenerator=new AtomicInteger(19);
 
     public Place(Long id, Long ownerId, String label, String address, double longitude, double latitude) {
-        this.id = id!= null ? id : (long) idGenerator.incrementAndGet();
+        this.id = id;
         this.ownerId = ownerId;
         this.label = label;
         this.address = address;

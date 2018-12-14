@@ -97,13 +97,11 @@ public class EventsApi {
         if(placeJson != null) {
             PlaceParam newPlace = PlaceParam.fromJson(placeJson);
             Place place = newPlace.toDO();
-            long placeId = place.getId() != null ? place.getId() : placeService.save(place)
-                    .orElseThrow(InternalError::new)
-                    .getId();
-            event.setPlaceId(placeId);
+            placeService.update(place).orElseThrow(InternalError::new);
         }
         if (thumbnail != null) {
-            event.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
+            String filename = storageService.store(thumbnail);
+            event.setThumbnail(pathBuilder.toServerUrl(filename));
         }
 
         Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);

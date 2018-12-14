@@ -5,23 +5,44 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
-import sk.liptovzije.application.post.Post;
 import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
-@Table(name = "events")
-public class Event extends Post {
-    @Column(name = "place")
+@EqualsAndHashCode
+@Table(name = "event")
+public class Event implements Serializable {
+    // todo: figure out extension of Article object
+    @Id
+    @GeneratedValue
+    @Column(name = "event_id")
+    private Long id;
+
+    @Column(name = "place_id")
     private Long placeId;
+
+    @Column(name = "owner_id")
+    private Long ownerId;
+
+    @Column(name = "content")
+    private String content;
+
+    @Column(name = "thumbnail")
+    private String thumbnail;
+
+    @Column(name = "heading")
+    private String title;
+
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    @Column(name = "date_added")
+    private LocalDate dateAdded;
 
     @Convert(converter = LocalDatePersistenceConverter.class)
     @Column(name = "start_date")
@@ -43,26 +64,13 @@ public class Event extends Post {
     private Boolean approved;
 
     //todo: not working while saving
-//    @ManyToMany(cascade = {
-//            CascadeType.PERSIST,
-//            CascadeType.MERGE
-//    })
-//    @JoinTable(
-//            name = "event_tags",
-//            joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),
-//            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id")
-//    )
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     @JoinTable(
-            name = "event_tags",
+            name = "event_tag",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;
-
-    private Event(){
-        super();
-    }
 
     public static class Builder {
 

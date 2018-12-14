@@ -1,72 +1,76 @@
 package sk.liptovzije.core.service.place;
 
-import me.xdrop.fuzzywuzzy.FuzzySearch;
-import org.apache.commons.lang3.StringUtils;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.hibernate.HibernateQueryFactory;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.place.Place;
+import sk.liptovzije.application.place.QPlace;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
 public class PlaceService implements IPlaceService {
-
-    private List<Place> placesRepo = new ArrayList<>();
-    private int FUZZY_SCORE_TRESHOLD = 85;
-
-    public PlaceService() {
-        placesRepo.add(new Place(0L, null,"Ahoj", "Addressa 1", 19.596746688751296, 49.09751301668884));
-        placesRepo.add(new Place(1L, null,"Ahojky", "Addressa 2", 19.584112410359808, 49.08447298057577));
-        placesRepo.add(new Place(2L, null, "Nazdar", "Addressa 3", 19.560835126597226, 49.093241657941725));
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public Optional<Place> save(Place place) {
-        place.setId((long)this.placesRepo.size());
-        this.placesRepo.add(place);
+        try {
+            entityManager.unwrap(Session.class).save(place);
+        }  catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return Optional.ofNullable(place);
     }
 
     @Override
-    public void update(Place place) {
-        this.placesRepo.stream()
-                .filter(currentPlace -> currentPlace.getId().equals(place.getId()))
-                .forEach(updatedPlace -> updatedPlace = place);
+    public Optional<Long>  update(Place updatedPlace) {
+        // todo: make functional
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QPlace place = QPlace.place;
+        Long id = query.update(place).where(place.id.eq(updatedPlace.getId())).execute();
+
+        return Optional.of(id);
     }
 
     @Override
     public void delete(long id) {
-        this.placesRepo.removeIf(place -> {
-            return place.getId().equals(id);
-        });
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QPlace place = QPlace.place;
+        query.delete(place).where(place.id.eq(id)).execute();
     }
 
     @Override
     public Optional<Place> getById(long id) {
-        return this.placesRepo.stream()
-                .filter(place -> place.getId().equals(id))
-                .findFirst();
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QPlace place = QPlace.place;
+        Place result = query.selectFrom(place)
+                .where(place.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
     public List<Place> getBySubstring(String subName) {
-        return this.placesRepo.stream()
-                .filter(place -> {
-                    String normalizedName  = StringUtils.stripAccents(place.getLabel()).toLowerCase();
-                    String normalizedQuery = StringUtils.stripAccents(subName).toLowerCase();
-                    return (normalizedName.contains(normalizedQuery)
-                            || FuzzySearch.ratio(normalizedName, normalizedQuery) > FUZZY_SCORE_TRESHOLD);
-                })
-                .collect(Collectors.toList());
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QPlace place = QPlace.place;
+        return query.selectFrom(place)
+                .where(place.label.like(Expressions.asString("%").concat(subName).concat("%")))
+                .fetch();
     }
 
     @Override
     public List<Place> getAll() {
-        return placesRepo;
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QPlace place = QPlace.place;
+        return query.selectFrom(place).fetch();
     }
 }

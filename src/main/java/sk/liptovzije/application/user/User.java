@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-@Table(name = "users")
+@Table(name = "user")
 public class User {
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "username")

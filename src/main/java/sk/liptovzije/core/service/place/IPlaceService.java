@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface IPlaceService {
     Optional<Place> save(Place place);
 
-    void update(Place place);
+    Optional<Long> update(Place place);
 
     void delete(long id);
 
