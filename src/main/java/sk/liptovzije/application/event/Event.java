@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import sk.liptovzije.application.post.Post;
 import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
@@ -19,7 +20,7 @@ import java.util.Set;
 @EqualsAndHashCode
 @Table(name = "event")
 public class Event implements Serializable {
-    // todo: figure out extension of Article object
+
     @Id
     @GeneratedValue
     @Column(name = "event_id")
@@ -63,8 +64,7 @@ public class Event implements Serializable {
     @Column(name = "approved")
     private Boolean approved;
 
-    //todo: not working while saving
-    @OneToMany(cascade=CascadeType.ALL)
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "event_tag",
             joinColumns = @JoinColumn(name = "event_id"),

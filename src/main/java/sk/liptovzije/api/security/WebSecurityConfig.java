@@ -50,9 +50,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET, "/articles").permitAll()
 
             .antMatchers(HttpMethod.DELETE, "/events").hasRole(ADMIN)
-            .antMatchers(HttpMethod.POST, "/events/update").hasAnyRole(ADMIN, USER, TRUSTED_USER)
             .antMatchers(HttpMethod.POST, "/events/filter").permitAll()
             .antMatchers(HttpMethod.GET, "/events").permitAll()
+
+            .antMatchers(HttpMethod.POST, "/eventtag").hasAnyRole(ADMIN, TRUSTED_USER)
+            .antMatchers(HttpMethod.POST, "/eventtag/update").hasAnyRole(ADMIN, TRUSTED_USER)
+            .antMatchers(HttpMethod.DELETE, "/eventtag").hasAnyRole(ADMIN, TRUSTED_USER)
+            .antMatchers(HttpMethod.GET, "/eventtag/id").permitAll()
+            .antMatchers(HttpMethod.GET, "/eventtag").permitAll()
 
             .antMatchers(HttpMethod.POST,"/users", "/users/login").permitAll()
             .antMatchers(HttpMethod.POST, "/users/filter").permitAll()
@@ -63,8 +68,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET, "/places").permitAll()
             .antMatchers(HttpMethod.GET, "/places/id").permitAll()
             .antMatchers(HttpMethod.GET, "/places/list").permitAll()
-
-            .antMatchers(HttpMethod.GET, "/eventtag").permitAll()
 
             //todo: This is just for inmemory H2 DB -> remove in production
             .antMatchers("/h2-console/**").permitAll()

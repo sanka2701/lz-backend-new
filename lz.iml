@@ -17,6 +17,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-apt:4.2.1" level="project" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-codegen:4.2.1" level="project" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-jpa:4.2.1" level="project" />
+    <orderEntry type="library" name="Maven: com.querydsl:querydsl-core:4.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-data-jpa:1.5.2.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter:1.5.2.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot:1.5.2.RELEASE" level="project" />

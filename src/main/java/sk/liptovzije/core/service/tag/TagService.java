@@ -34,7 +34,10 @@ public class TagService implements ITagService {
         // todo return updated
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QTag tag = QTag.tag;
-        query.update(tag).where(tag.id.eq(updatedTag.getId())).execute();
+        query.update(tag)
+                .where(tag.id.eq(updatedTag.getId()))
+                .set(tag.label, updatedTag.getLabel())
+                .execute();
     }
 
     @Override
