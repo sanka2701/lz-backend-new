@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
-import sk.liptovzije.application.post.Post;
+import sk.liptovzije.application.file.File;
 import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
@@ -71,6 +71,14 @@ public class Event implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;
+
+//    @OneToMany(cascade=CascadeType.ALL)
+//    @JoinTable(
+//            name = "event_tag",
+//            joinColumns = @JoinColumn(name = "event_id"),
+//            inverseJoinColumns = @JoinColumn(name = "file_id")
+//    )
+//    private Set<File> files;
 
     public static class Builder {
 

@@ -50,4 +50,20 @@ CREATE TABLE event_tag (
   KEY fk_tag (tag_id),
   CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tag (tag_id),
   CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (event_id)
-)
+);
+
+CREATE TABLE file (
+  file_id     INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  replace_key VARCHAR(25),
+  path        VARCHAR(100)
+);
+
+CREATE TABLE content_file (
+  event_id   INTEGER NOT NULL,
+  file_id     INTEGER NOT NULL,
+  PRIMARY KEY (event_id,file_id),
+  KEY fk_f_event (event_id),
+  KEY fk_f_file (file_id),
+  CONSTRAINT fk_f_file FOREIGN KEY (file_id) REFERENCES file (file_id),
+  CONSTRAINT fk_f_event FOREIGN KEY (event_id) REFERENCES event (event_id)
+);
