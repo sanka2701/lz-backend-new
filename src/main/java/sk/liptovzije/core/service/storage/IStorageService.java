@@ -1,4 +1,4 @@
-package sk.liptovzije.core.service.file;
+package sk.liptovzije.core.service.storage;
 
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;

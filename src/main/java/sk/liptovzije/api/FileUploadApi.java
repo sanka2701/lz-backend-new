@@ -4,14 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import sk.liptovzije.core.service.file.IStorageService;
+import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.utils.exception.StorageFileNotFoundException;
 
 import java.io.IOException;
@@ -64,7 +62,7 @@ public class FileUploadApi {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadFile(@RequestParam("storage") MultipartFile file) {
         String serverFileLocation = storageService.store(file);
         return new ResponseEntity<>(serverFileLocation , HttpStatus.OK);
     }

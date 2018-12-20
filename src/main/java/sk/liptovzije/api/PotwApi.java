@@ -15,11 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.photo.WeeklyPhoto;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.FileUrlBuilder;
-import sk.liptovzije.core.service.file.IStorageService;
+import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.core.service.potw.PhotoOfTheWeekService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public class PotwApi {
 
     @PostMapping
     public ResponseEntity createWeeklyPhoto(@RequestParam("json") String photoJson,
-                                            @RequestParam("file") MultipartFile photoFile,
+                                            @RequestParam("storage") MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto addedPhoto = paramToWeeklyPhoto(param);
@@ -60,7 +59,7 @@ public class PotwApi {
 
     @PostMapping(path = "/update")
     public ResponseEntity updateWeeklyPhoto(@RequestParam("json") String photoJson,
-                                            @RequestParam(name = "file", required = false) MultipartFile photoFile,
+                                            @RequestParam(name = "storage", required = false) MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto updatedPhoto = paramToWeeklyPhoto(param);

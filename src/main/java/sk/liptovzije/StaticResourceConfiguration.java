@@ -6,10 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import sk.liptovzije.core.service.file.StorageProperties;
+import sk.liptovzije.core.service.storage.StorageProperties;
 
 import java.io.File;
-import java.net.URL;
 
 @Configuration
 public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
@@ -24,7 +23,7 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
         urlStr = urlStr.replace("\\", "/");
         urlStr = urlStr.startsWith("/") ? urlStr.substring(1) : urlStr;
         urlStr = urlStr.substring(0,urlStr.length() - 1);
-        urlStr = "file:///" + urlStr;
+        urlStr = "storage:///" + urlStr;
 
         logger.debug("Path to jar: " + urlStr);
 

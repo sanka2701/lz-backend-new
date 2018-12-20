@@ -14,7 +14,7 @@
 //import org.springframework.context.annotation.Import;
 //import org.springframework.test.web.servlet.MockMvc;
 //import sk.liptovzije.api.security.WebSecurityConfig;
-//import sk.liptovzije.core.service.file.IStorageService;
+//import sk.liptovzije.core.service.storage.IStorageService;
 //import sk.liptovzije.core.service.jwt.IJwtService;
 //
 //import java.io.File;
@@ -51,8 +51,8 @@
 //        String filename = "picture.jpg";
 //        String fileLocation = "resulting/path/" + filename;
 //
-//        File file = folder.newFile(filename);
-//        IOUtils.write("Something21", new FileOutputStream(file));
+//        File storage = folder.newFile(filename);
+//        IOUtils.write("Something21", new FileOutputStream(storage));
 //
 ////        when(storageService.store(any())).thenReturn(fileLocation);
 ////        doNothing().when(storageService).store(any());
@@ -60,7 +60,7 @@
 //        given()
 //            .header("Authorization", "Token " + token)
 //            .contentType("multipart/form-data")
-//            .multiPart(file)
+//            .multiPart(storage)
 //        .when()
 //            .post("/files/upload")
 //        .then()
@@ -71,13 +71,13 @@
 //    @Test
 //    public void store_and_delete() throws Exception {
 //        // comment out storage service mock
-//        File file = folder.newFile("picture.jpg");
-//        IOUtils.write("Something21", new FileOutputStream(file));
+//        File storage = folder.newFile("picture.jpg");
+//        IOUtils.write("Something21", new FileOutputStream(storage));
 //
 //        MockMvcResponse res = given()
 //            .header("Authorization", "Token " + token)
 //            .contentType("multipart/form-data")
-//            .multiPart(file)
+//            .multiPart(storage)
 //        .when()
 //            .post("/files/upload");
 //

@@ -16,5 +16,5 @@ public interface IEventService {
 
     Optional<Event> getById(long id);
 
-    List<Event> getByFilter(EventFilter filter);
+    List<Event> getAll();
 }

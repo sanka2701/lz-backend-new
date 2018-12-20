@@ -15,7 +15,7 @@ import sk.liptovzije.application.article.ArticleFilter;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.FileUrlBuilder;
 import sk.liptovzije.core.service.article.ArticleService;
-import sk.liptovzije.core.service.file.IStorageService;
+import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
@@ -47,7 +47,7 @@ public class ArticleApi {
     public ResponseEntity createArticle(@RequestParam("article") String eventJson,
                                         @RequestParam("thumbnail") MultipartFile thumbnail,
                                         @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                        @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                        @RequestParam(value = "storage", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article article = this.paramToEvent(user.getId(), param);
@@ -65,7 +65,7 @@ public class ArticleApi {
     public ResponseEntity updateArticle(@RequestParam("article") String eventJson,
                                         @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
                                         @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                        @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                        @RequestParam(value = "storage", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article article = this.paramToEvent(user.getId(), param);

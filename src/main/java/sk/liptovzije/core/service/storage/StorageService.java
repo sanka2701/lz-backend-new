@@ -1,4 +1,4 @@
-package sk.liptovzije.core.service.file;
+package sk.liptovzije.core.service.storage;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +38,15 @@ public class StorageService implements IStorageService {
         try {
             currentPath = resolveCurrentDirectory();
             if (file.isEmpty()) {
-                throw new StorageException("Failed to store empty file " + filename);
+                throw new StorageException("Failed to store empty storage " + filename);
             }
             if (filename.contains("..")) {
-                throw new StorageException("Cannot store file with relative path outside current directory " + filename);
+                throw new StorageException("Cannot store storage with relative path outside current directory " + filename);
             }
             Files.copy(file.getInputStream(), load(currentPath.resolve(filename).toString()), StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
-            throw new StorageException("Failed to store file " + filename, e);
+            throw new StorageException("Failed to store storage " + filename, e);
         }
 
         return Paths.get(currentPath.toString(), filename).toString();
@@ -79,12 +79,12 @@ public class StorageService implements IStorageService {
             }
             else {
                 throw new StorageFileNotFoundException(
-                        "Could not read file: " + filename);
+                        "Could not read storage: " + filename);
 
             }
         }
         catch (MalformedURLException e) {
-            throw new StorageFileNotFoundException("Could not read file: " + filename, e);
+            throw new StorageFileNotFoundException("Could not read storage: " + filename, e);
         }
     }
 

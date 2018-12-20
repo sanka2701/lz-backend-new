@@ -12,26 +12,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.event.Event;
-import sk.liptovzije.application.event.EventFilter;
 import sk.liptovzije.application.place.Place;
-import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.FileUrlBuilder;
 import sk.liptovzije.core.service.authorization.IAuthorizationService;
 import sk.liptovzije.core.service.event.IEventService;
-import sk.liptovzije.core.service.file.IStorageService;
+import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.core.service.place.IPlaceService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,7 +57,7 @@ public class EventsApi {
                                       @RequestParam("place") String placeJson,
                                       @RequestParam("thumbnail") MultipartFile thumbnail,
                                       @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                      @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                      @RequestParam(value = "storage", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam newEvent = EventParam.fromJson(eventJson);
         PlaceParam newPlace = PlaceParam.fromJson(placeJson);
@@ -89,7 +83,7 @@ public class EventsApi {
                                       @RequestParam(value = "place", required = false) String placeJson,
                                       @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
                                       @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                      @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                      @RequestParam(value = "storage", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam newEvent = EventParam.fromJson(eventJson);
         Event event = this.paramToEvent(user, newEvent);
@@ -119,9 +113,9 @@ public class EventsApi {
                 .orElseThrow(ResourceNotFoundException::new);
     }
 
-    @PostMapping("/filter")
-    public ResponseEntity filterEvents(@Valid @RequestBody EventFilter filter) {
-        List<Event> events = this.eventService.getByFilter(filter);
+    @GetMapping("/all")
+    public ResponseEntity filterEvents() {
+        List<Event> events = this.eventService.getAll();
         return ResponseEntity.ok(eventListResponse(events));
     }
 

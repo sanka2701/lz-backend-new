@@ -60,7 +60,7 @@ public class EventService implements IEventService {
     }
 
     @Override
-    public List<Event> getByFilter(EventFilter filter) {
+    public List<Event> getAll() {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QEvent event = QEvent.event;
         List<Event> result = query.selectFrom(event).fetch();
