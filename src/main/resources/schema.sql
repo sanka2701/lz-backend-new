@@ -37,7 +37,7 @@ CREATE TABLE event (
   start_time     TIME,
   end_date       DATE,
   end_time       TIME,
-  approved       BOOL,
+  approved       BOOL DEFAULT false,
   FOREIGN KEY (owner_id) REFERENCES user (user_id),
   FOREIGN KEY (place_id) REFERENCES place (place_id)
 );
