@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.article.Article;
 import sk.liptovzije.application.article.ArticleFilter;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.core.service.FileUrlBuilder;
+import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.article.ArticleService;
 import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
@@ -32,12 +32,12 @@ public class ArticleApi {
 
     private ArticleService articleService;
     private IStorageService storageService;
-    private FileUrlBuilder pathBuilder;
+    private IFileUrlBuilder pathBuilder;
 
     @Autowired
     public ArticleApi(ArticleService articleService,
                       IStorageService storageService,
-                      FileUrlBuilder pathBuilder) {
+                      IFileUrlBuilder pathBuilder) {
         this.articleService = articleService;
         this.storageService = storageService;
         this.pathBuilder = pathBuilder;
@@ -52,9 +52,10 @@ public class ArticleApi {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article article = this.paramToEvent(user.getId(), param);
 
-        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
-        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
-        article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
+        //todo
+//        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
+//        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
+//        article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
 
         return this.articleService.create(article)
                 .map(storedArticle -> ResponseEntity.ok(this.articleResponse(storedArticle)))
@@ -70,11 +71,12 @@ public class ArticleApi {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article article = this.paramToEvent(user.getId(), param);
 
-        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
-        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
-        if(thumbnail != null) {
-            article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
-        }
+        //todo
+//        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
+//        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
+//        if(thumbnail != null) {
+//            article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
+//        }
 
         return this.articleService.update(article)
                 .map(storedEvent -> ResponseEntity.ok(this.articleResponse(article)))

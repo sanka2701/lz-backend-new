@@ -3,53 +3,54 @@ package sk.liptovzije.core.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import sk.liptovzije.core.service.storage.IStorageService;
+import sk.liptovzije.application.file.File;
 
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class DefaultFileUrlBuilder implements FileUrlBuilder{
+public class DefaultFileUrlBuilder implements IFileUrlBuilder {
 
-    private String serverUrl;
-    private IStorageService storageService;
+    private String serverUrlPlaceholder;
 
     @Autowired
-    public DefaultFileUrlBuilder(@Value("${app.serverUrl}") String serverUrl,
-                                 IStorageService storageService) {
-        this.serverUrl = serverUrl;
-        this.storageService = storageService;
+    public DefaultFileUrlBuilder(@Value("${app.serverUrlPlaceholder}") String urlPlaceholder) {
+        this.serverUrlPlaceholder = urlPlaceholder;
     }
 
     @Override
-    public Map<String, String> buildFileUrlMap (String[] contentFileUrls, MultipartFile[] files) {
-        if(contentFileUrls != null && files != null && contentFileUrls.length != files.length) {
+    public Map<String, File> buildFileUrlMap (List<String> contentFileUrls, List<File> files) {
+        if(contentFileUrls != null && files != null && contentFileUrls.size() != files.size()) {
             throw new IllegalArgumentException("List of files and corresponding urls has to be equal size");
         }
 
-        Map<String, String> urlMap = new HashMap<>();
-        for(int i = 0; contentFileUrls != null && files != null && i < files.length; i++) {
-            urlMap.put(contentFileUrls[i], toServerUrl(storageService.store(files[i])));
+        Map<String, File> urlMap = new HashMap<>();
+        for(int i = 0; contentFileUrls != null && files != null && i < files.size(); i++) {
+            urlMap.put(contentFileUrls.get(i), files.get(i));
         }
-        return  urlMap;
+        return urlMap;
     }
 
     @Override
-    public String toServerUrl(String filePath) {
+    public String toServerUrl(Path filePath) {
         StringBuilder sb = new StringBuilder();
-        sb.append(serverUrl);
+        sb.append(serverUrlPlaceholder);
         sb.append("/img/");
-        sb.append(filePath.replace("\\", "/"));
+        sb.append(filePath.toString().replace("\\", "/"));
         return sb.toString();
     }
 
     @Override
-    public String replaceUrls(String content, Map<String, String> urlMap) {
+    public String replaceUrls(String content, Map<String, File> urlMap) {
         return  urlMap.entrySet()
                 .stream()
-                .map(entry -> (Function<String,String>) s->s.replace(entry.getKey(), entry.getValue()))
+                .map(entry -> (Function<String,String>) url -> {
+                    String replacement = toServerUrl(entry.getValue().getPath());
+                    return url.replace(entry.getKey(), replacement);
+                })
                 .reduce(Function.identity(), Function::andThen)
                 .apply(content);
     }

@@ -20,6 +20,13 @@ CREATE TABLE place (
   FOREIGN KEY (owner_id) REFERENCES user (user_id)
 );
 
+CREATE TABLE file (
+  file_id     INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  extension   VARCHAR(5),
+  name        VARCHAR(50),
+  directory   VARCHAR(100)
+);
+
 CREATE TABLE tag (
   tag_id  INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
   label   VARCHAR(25)
@@ -30,7 +37,7 @@ CREATE TABLE event (
   owner_id       INTEGER NOT NULL,
   place_id       INTEGER NOT NULL,
   content        TEXT,
-  thumbnail      VARCHAR(100),
+  thumbnail      INTEGER NOT NULL,
   heading        VARCHAR(50),
   date_added     DATE,
   start_date     DATE,
@@ -38,6 +45,7 @@ CREATE TABLE event (
   end_date       DATE,
   end_time       TIME,
   approved       BOOL DEFAULT false,
+  FOREIGN KEY (thumbnail) REFERENCES file (file_id),
   FOREIGN KEY (owner_id) REFERENCES user (user_id),
   FOREIGN KEY (place_id) REFERENCES place (place_id)
 );
@@ -50,12 +58,6 @@ CREATE TABLE event_tag (
   KEY fk_tag (tag_id),
   CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tag (tag_id),
   CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (event_id)
-);
-
-CREATE TABLE file (
-  file_id     INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  replace_key VARCHAR(25),
-  path        VARCHAR(100)
 );
 
 CREATE TABLE content_file (

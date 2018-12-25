@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.photo.WeeklyPhoto;
 import sk.liptovzije.application.user.User;
-import sk.liptovzije.core.service.FileUrlBuilder;
+import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.core.service.potw.PhotoOfTheWeekService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
@@ -32,12 +32,12 @@ public class PotwApi {
 
     private PhotoOfTheWeekService potwService;
     private IStorageService storageService;
-    private FileUrlBuilder pathBuilder;
+    private IFileUrlBuilder pathBuilder;
 
     @Autowired
     public PotwApi (PhotoOfTheWeekService potwService,
                     IStorageService storageService,
-                    FileUrlBuilder pathBuilder) {
+                    IFileUrlBuilder pathBuilder) {
         this.potwService = potwService;
         this.storageService = storageService;
         this.pathBuilder = pathBuilder;
@@ -51,7 +51,8 @@ public class PotwApi {
         WeeklyPhoto addedPhoto = paramToWeeklyPhoto(param);
 
         addedPhoto.setOwnerId(user.getId());
-        addedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
+        //todo
+//        addedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
         return potwService.save(addedPhoto)
                 .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))
                 .orElseThrow(InternalError::new);
@@ -65,7 +66,8 @@ public class PotwApi {
         WeeklyPhoto updatedPhoto = paramToWeeklyPhoto(param);
 
         if(photoFile != null) {
-            updatedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
+            //todo
+//            updatedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
         }
         return potwService.update(updatedPhoto)
                 .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))

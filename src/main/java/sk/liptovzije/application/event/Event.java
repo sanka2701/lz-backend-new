@@ -35,9 +35,6 @@ public class Event implements Serializable {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "thumbnail")
-    private String thumbnail;
-
     @Column(name = "heading")
     private String title;
 
@@ -64,6 +61,18 @@ public class Event implements Serializable {
     @Column(name = "approved")
     private Boolean approved;
 
+    @OneToOne
+    @JoinColumn(name = "thumbnail")
+    private File thumbnail;
+
+    @OneToMany(cascade=CascadeType.ALL)
+    @JoinTable(
+            name = "content_file",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private Set<File> files;
+
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "event_tag",
@@ -71,14 +80,6 @@ public class Event implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;
-
-//    @OneToMany(cascade=CascadeType.ALL)
-//    @JoinTable(
-//            name = "event_tag",
-//            joinColumns = @JoinColumn(name = "event_id"),
-//            inverseJoinColumns = @JoinColumn(name = "file_id")
-//    )
-//    private Set<File> files;
 
     public static class Builder {
 
@@ -90,7 +91,7 @@ public class Event implements Serializable {
         private LocalTime startTime;
         private LocalDate endDate;
         private LocalTime endTime;
-        private String thumbnail;
+        private File thumbnail;
         private String content;
         private Boolean approved;
         private Set<Tag> tags;
@@ -142,7 +143,7 @@ public class Event implements Serializable {
             return this;
         }
 
-        public Builder thumbnail(String thumbnail){
+        public Builder thumbnail(File thumbnail){
             this.thumbnail = thumbnail;
             return this;
         }

@@ -23,7 +23,7 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
         urlStr = urlStr.replace("\\", "/");
         urlStr = urlStr.startsWith("/") ? urlStr.substring(1) : urlStr;
         urlStr = urlStr.substring(0,urlStr.length() - 1);
-        urlStr = "storage:///" + urlStr;
+        urlStr = "file:///" + urlStr;
 
         logger.debug("Path to jar: " + urlStr);
 

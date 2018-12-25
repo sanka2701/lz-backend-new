@@ -1,12 +1,14 @@
 package sk.liptovzije.core.service.storage;
 
 import org.apache.commons.io.FilenameUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
+import sk.liptovzije.application.file.File;
 import sk.liptovzije.utils.exception.StorageException;
 import sk.liptovzije.utils.exception.StorageFileNotFoundException;
 
@@ -16,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Calendar;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -30,26 +31,26 @@ public class StorageService implements IStorageService {
     }
 
     @Override
-    public String store(MultipartFile file) {
-        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String filename = UUID.randomUUID().toString().replace("-", "") + "." + fileExtension;
-
-        Path currentPath;
+    public File store(MultipartFile file) {
+        File storedFile = new File();
         try {
-            currentPath = resolveCurrentDirectory();
+            storedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
+            storedFile.setName(generateFileName());
+            storedFile.setDirectory(resolveCurrentDirectory().toString());
+
             if (file.isEmpty()) {
-                throw new StorageException("Failed to store empty storage " + filename);
+                throw new StorageException("Failed to store empty storage " + storedFile);
             }
-            if (filename.contains("..")) {
-                throw new StorageException("Cannot store storage with relative path outside current directory " + filename);
-            }
-            Files.copy(file.getInputStream(), load(currentPath.resolve(filename).toString()), StandardCopyOption.REPLACE_EXISTING);
+
+            Files.copy(file.getInputStream(),
+                    toRootLocation(storedFile.getPath()),
+                    StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
-            throw new StorageException("Failed to store storage " + filename, e);
+            throw new StorageException("Failed to store storage " + storedFile, e);
         }
 
-        return Paths.get(currentPath.toString(), filename).toString();
+        return storedFile;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class StorageService implements IStorageService {
         try {
             return Files.walk(this.rootLocation, 1)
                     .filter(path -> !path.equals(this.rootLocation))
-                    .map(path -> this.rootLocation.relativize(path));
+                    .map(this.rootLocation::relativize);
         }
         catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
@@ -65,14 +66,9 @@ public class StorageService implements IStorageService {
     }
 
     @Override
-    public Path load(String filename) {
-        return rootLocation.resolve(filename);
-    }
-
-    @Override
     public Resource loadAsResource(String filename) {
         try {
-            Path file = load(filename);
+            Path file = toRootLocation(filename);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
@@ -109,11 +105,23 @@ public class StorageService implements IStorageService {
         }
     }
 
+    private Path toRootLocation(String filename) {
+        return rootLocation.resolve(filename);
+    }
+
+    private Path toRootLocation(Path path) {
+        return rootLocation.resolve(path);
+    }
+
+    private String generateFileName() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
     private Path resolveCurrentDirectory() throws IOException {
-        Calendar now = Calendar.getInstance();
-        String year  =  String.valueOf(now.get(Calendar.YEAR));
-        String month =  String.valueOf(now.get(Calendar.MONTH));
-        String day   =  String.valueOf(now.get(Calendar.DATE));
+        DateTime now = DateTime.now();
+        String year  =  String.valueOf(now.getYear());
+        String month =  String.valueOf(now.getMonthOfYear());
+        String day   =  String.valueOf(now.getDayOfMonth());
 
         Path dateSubPath = Paths.get(year, month, day);
         Path finalPath   = rootLocation.resolve(dateSubPath);
