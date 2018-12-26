@@ -62,7 +62,7 @@ public class FileUploadApi {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("storage") MultipartFile file) {
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         //todo
 //        String serverFileLocation = storageService.store(file);
         String serverFileLocation = "";

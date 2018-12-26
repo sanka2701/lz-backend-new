@@ -10,9 +10,9 @@ public interface IEventService {
 
     void delete (long id);
 
-    Optional<Event> create(Event event);
+    void update (Event event);
 
-    Optional<Event> update (Event event);
+    Optional<Event> create(Event event);
 
     Optional<Event> getById(long id);
 

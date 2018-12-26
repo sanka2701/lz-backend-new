@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class EventsApi {
             IPlaceService placeService,
             IFileService fileService,
             IFileUrlBuilder pathBuilder,
-            IAuthorizationService authorizationService){
+            IAuthorizationService authorizationService) {
         this.eventService = eventService;
         this.placeService = placeService;
         this.fileService  = fileService;
@@ -55,7 +56,7 @@ public class EventsApi {
                                       @RequestParam("place") String placeJson,
                                       @RequestParam("thumbnail") MultipartFile thumbnail,
                                       @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
-                                      @RequestParam(value = "storage", required = false) MultipartFile[] files,
+                                      @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam newEvent = EventParam.fromJson(eventJson);
         PlaceParam newPlace = PlaceParam.fromJson(placeJson);
@@ -65,19 +66,18 @@ public class EventsApi {
         List<MultipartFile> urlFiles = files != null
                 ? Arrays.asList(files)
                 : Collections.emptyList();
-        Event event = this.paramToEvent(user, newEvent);
+        Event event = this.paramToDomain(user, newEvent);
         Place place = newPlace.toDO();
 
-        //todo fix get without checking
         File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
         List<File> contentFiles = fileService.save(urlFiles);
         Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
 
-        long placeId = place.getId() != null
-                ? place.getId()
-                : placeService.save(place)
-                    .orElseThrow(InternalError::new)
-                    .getId();
+        long placeId = (
+                place.getId() != null
+                    ? place
+                    : placeService.save(place).orElseThrow(InternalError::new)
+                ).getId();
         event.setPlaceId(placeId);
         event.setThumbnail(thumbnailFile);
         event.setFiles(new HashSet<>(contentFiles));
@@ -92,29 +92,40 @@ public class EventsApi {
     public ResponseEntity updateEvent(@RequestParam("event") String eventJson,
                                       @RequestParam(value = "place", required = false) String placeJson,
                                       @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-                                      @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                      @RequestParam(value = "storage", required = false) MultipartFile[] files,
+                                      @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
+                                      @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
-//        EventParam newEvent = EventParam.fromJson(eventJson);
-//        Event event = this.paramToEvent(user, newEvent);
-//
-//        if(placeJson != null) {
-//            PlaceParam newPlace = PlaceParam.fromJson(placeJson);
-//            Place place = newPlace.toDO();
-//            placeService.update(place).orElseThrow(InternalError::new);
-//        }
-//        if (thumbnail != null) {
-//            String filename = fileService.store(thumbnail);
-//            event.setThumbnail(pathBuilder.toServerUrl(filename));
-//        }
-//
-//        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
-//        event.setContent(pathBuilder.replaceUrls(newEvent.getContent(), urlMap));
-//
-//        return this.eventService.update(event)
-//                .map(storedEvent -> ResponseEntity.ok(this.eventResponse(event)))
-//                .orElseThrow(ResourceNotFoundException::new);
-        return ResponseEntity.ok().build();
+        EventParam eventParam = EventParam.fromJson(eventJson);
+        PlaceParam placeParam = PlaceParam.fromJson(placeJson);
+        Place place = placeParam.toDO();
+        Event event = this.paramToDomain(user, eventParam);
+        List<String> contentFileUrls = fileUrls != null
+                ? Arrays.asList(fileUrls)
+                : Collections.emptyList();
+        List<MultipartFile> urlFiles = files != null
+                ? Arrays.asList(files)
+                : Collections.emptyList();
+
+        event.setPlaceId(
+            place.getId() != null
+                ? place.getId()
+                : placeService.save(place).map(Place::getId).orElseThrow(InternalError::new)
+        );
+
+        //todo: delete files which were previously used and are replaced
+        if (thumbnail != null) {
+            File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
+            event.setThumbnail(thumbnailFile);
+        }
+
+        if(contentFileUrls.size() > 0) {
+            List<File> contentFiles = fileService.save(urlFiles);
+            Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
+            event.setContent(pathBuilder.replaceUrls(eventParam.getContent(), urlMap));
+        }
+
+        this.eventService.update(event);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping()
@@ -130,7 +141,7 @@ public class EventsApi {
         return ResponseEntity.ok(eventListResponse(events));
     }
 
-    private Event paramToEvent(User owner, EventParam param) {
+    private Event paramToDomain(User owner, EventParam param) {
         return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
                 .id(param.getId())
                 .tags(Arrays.stream(param.getTags()).map(TagParam::toDo).collect(Collectors.toSet()))
@@ -143,13 +154,33 @@ public class EventsApi {
                 .build();
     }
 
+    //todo: transfer just tag ids
+    private EventParam domainToParam(Event domainEvent) {
+        EventParam param = new EventParam();
+
+        param.setId(domainEvent.getId());
+        param.setTags(domainEvent.getTags().stream().map(TagParam::new).toArray(TagParam[]::new));
+        param.setPlaceId(domainEvent.getPlaceId());
+        param.setOwnerId(domainEvent.getOwnerId());
+        param.setTitle(domainEvent.getTitle());
+        param.setContent(domainEvent.getContent());
+        param.setThumbnail(pathBuilder.toServerUrl(domainEvent.getThumbnail().getPath()));
+        param.setStartDate(domainEvent.getStartDate().toDate().getTime());
+        param.setEndDate(domainEvent.getEndDate().toDate().getTime());
+        param.setStartTime((long) domainEvent.getStartTime().getMillisOfDay());
+        param.setEndTime((long) domainEvent.getEndTime().getMillisOfDay());
+        param.setApproved(domainEvent.getApproved());
+
+        return param;
+    }
+
     private Map<String, List> eventResponse(Event event) {
         return eventListResponse(Stream.of(event).collect(Collectors.toList()));
     }
 
-    private Map<String, List> eventListResponse(List<Event> events){
+    private Map<String, List> eventListResponse(List<Event> events) {
         List<EventParam> params = events.stream()
-                .map(EventParam::new)
+                .map(this::domainToParam)
                 .collect(Collectors.toList());
 
         return new HashMap<String, List>() {{
@@ -159,6 +190,7 @@ public class EventsApi {
 }
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 class EventParam {
@@ -181,20 +213,5 @@ class EventParam {
         ObjectMapper objectMapper = new ObjectMapper();
         TypeFactory typeFactory = objectMapper.getTypeFactory();
         return objectMapper.readValue(json, typeFactory.constructType(EventParam.class));
-    }
-
-    EventParam(Event domainEvent) {
-        this.id        = domainEvent.getId();
-        this.tags      = domainEvent.getTags().stream().map(TagParam::new).toArray(TagParam[]::new);;
-        this.placeId   = domainEvent.getPlaceId();
-        this.ownerId   = domainEvent.getOwnerId();
-        this.title     = domainEvent.getTitle();
-        this.content   = domainEvent.getContent();
-        this.thumbnail = domainEvent.getThumbnail().getPath().toString();
-        this.startDate = domainEvent.getStartDate().toDate().getTime();
-        this.endDate   = domainEvent.getEndDate().toDate().getTime();
-        this.startTime = (long) domainEvent.getStartTime().getMillisOfDay();
-        this.endTime   = (long) domainEvent.getEndTime().getMillisOfDay();
-        this.approved  = domainEvent.getApproved();
     }
 }

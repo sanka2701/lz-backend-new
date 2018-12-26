@@ -39,7 +39,7 @@ public class StorageService implements IStorageService {
             storedFile.setDirectory(resolveCurrentDirectory().toString());
 
             if (file.isEmpty()) {
-                throw new StorageException("Failed to store empty storage " + storedFile);
+                throw new StorageException("Failed to store empty file " + storedFile);
             }
 
             Files.copy(file.getInputStream(),
@@ -47,7 +47,7 @@ public class StorageService implements IStorageService {
                     StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
-            throw new StorageException("Failed to store storage " + storedFile, e);
+            throw new StorageException("Failed to store file " + storedFile, e);
         }
 
         return storedFile;
@@ -75,12 +75,12 @@ public class StorageService implements IStorageService {
             }
             else {
                 throw new StorageFileNotFoundException(
-                        "Could not read storage: " + filename);
+                        "Could not read file: " + filename);
 
             }
         }
         catch (MalformedURLException e) {
-            throw new StorageFileNotFoundException("Could not read storage: " + filename, e);
+            throw new StorageFileNotFoundException("Could not read file: " + filename, e);
         }
     }
 
@@ -101,7 +101,7 @@ public class StorageService implements IStorageService {
             Files.createDirectories(rootLocation);
         }
         catch (IOException e) {
-            throw new StorageException("Could not initialize storage", e);
+            throw new StorageException("Could not initialize file", e);
         }
     }
 

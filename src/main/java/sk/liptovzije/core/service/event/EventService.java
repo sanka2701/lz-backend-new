@@ -1,10 +1,10 @@
 package sk.liptovzije.core.service.event;
 
 import com.querydsl.jpa.hibernate.HibernateQueryFactory;
+import com.querydsl.jpa.hibernate.HibernateUpdateClause;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.event.Event;
-import sk.liptovzije.application.event.EventFilter;
 import sk.liptovzije.application.event.QEvent;
 
 import javax.persistence.EntityManager;
@@ -40,12 +40,33 @@ public class EventService implements IEventService {
 
     @Override
     @Transactional
-    public Optional<Event> update(Event updatedEvent) {
+    public void update(Event event) {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEvent event = QEvent.event;
-        query.update(event).where(event.id.eq(updatedEvent.getId())).execute();
+        QEvent qEvent = QEvent.event;
+        HibernateUpdateClause update = query.update(qEvent).where(qEvent.id.eq(event.getId()));
 
-        return Optional.ofNullable(updatedEvent);
+        if(event.getThumbnail() != null) {
+            update.set(qEvent.thumbnail, event.getThumbnail());
+        }
+        //todo: content_files are not updating
+        if(event.getFiles() != null) {
+            update.set(qEvent.files, event.getFiles());
+        }
+        //todo: crashing when changed
+//        if(event.getTags() != null) {
+//            update.set(qEvent.tags, event.getTags());
+//        }
+
+        update
+        .set(qEvent.placeId, event.getPlaceId())
+        .set(qEvent.content, event.getContent())
+        .set(qEvent.title, event.getTitle())
+        .set(qEvent.startDate, event.getStartDate())
+        .set(qEvent.endDate, event.getEndDate())
+        .set(qEvent.startTime, event.getStartTime())
+        .set(qEvent.endTime, event.getEndTime())
+        .set(qEvent.approved, event.getApproved())
+        .execute();
     }
 
     @Override

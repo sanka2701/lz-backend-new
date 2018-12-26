@@ -31,13 +31,16 @@ public class PlaceService implements IPlaceService {
     }
 
     @Override
-    public Optional<Long>  update(Place updatedPlace) {
-        // todo: make functional
+    public void  update(Place place) {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QPlace place = QPlace.place;
-        Long id = query.update(place).where(place.id.eq(updatedPlace.getId())).execute();
-
-        return Optional.of(id);
+        QPlace qPlace = QPlace.place;
+        query.update(qPlace)
+                .where(qPlace.id.eq(place.getId()))
+                .set(qPlace.label, place.getLabel())
+                .set(qPlace.address, place.getAddress())
+                .set(qPlace.latitude, place.getLatitude())
+                .set(qPlace.longitude, place.getLongitude())
+                .execute();
     }
 
     @Override

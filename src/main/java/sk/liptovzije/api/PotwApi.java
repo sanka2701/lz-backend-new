@@ -12,9 +12,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import sk.liptovzije.application.file.File;
 import sk.liptovzije.application.photo.WeeklyPhoto;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.IFileUrlBuilder;
+import sk.liptovzije.core.service.file.IFileService;
 import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.core.service.potw.PhotoOfTheWeekService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
@@ -31,28 +33,30 @@ import java.util.stream.Stream;
 public class PotwApi {
 
     private PhotoOfTheWeekService potwService;
-    private IStorageService storageService;
+    private IFileService fileService;
     private IFileUrlBuilder pathBuilder;
 
     @Autowired
     public PotwApi (PhotoOfTheWeekService potwService,
-                    IStorageService storageService,
+                    IFileService fileService,
                     IFileUrlBuilder pathBuilder) {
         this.potwService = potwService;
-        this.storageService = storageService;
+        this.fileService = fileService;
         this.pathBuilder = pathBuilder;
     }
 
     @PostMapping
     public ResponseEntity createWeeklyPhoto(@RequestParam("json") String photoJson,
-                                            @RequestParam("storage") MultipartFile photoFile,
+                                            @RequestParam("file") MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto addedPhoto = paramToWeeklyPhoto(param);
 
+        File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
+        String url = pathBuilder.toServerUrl(potwFile.getPath());
+        addedPhoto.setPhotoUrl(url);
         addedPhoto.setOwnerId(user.getId());
-        //todo
-//        addedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
+
         return potwService.save(addedPhoto)
                 .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))
                 .orElseThrow(InternalError::new);
@@ -60,14 +64,15 @@ public class PotwApi {
 
     @PostMapping(path = "/update")
     public ResponseEntity updateWeeklyPhoto(@RequestParam("json") String photoJson,
-                                            @RequestParam(name = "storage", required = false) MultipartFile photoFile,
+                                            @RequestParam(name = "file", required = false) MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto updatedPhoto = paramToWeeklyPhoto(param);
 
         if(photoFile != null) {
-            //todo
-//            updatedPhoto.setPhotoUrl(pathBuilder.toServerUrl(storageService.store(photoFile)));
+            File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
+            String url = pathBuilder.toServerUrl(potwFile.getPath());
+            updatedPhoto.setPhotoUrl(url);
         }
         return potwService.update(updatedPhoto)
                 .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))
