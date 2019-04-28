@@ -96,8 +96,6 @@ public class EventsApi {
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam eventParam = EventParam.fromJson(eventJson);
-        PlaceParam placeParam = PlaceParam.fromJson(placeJson);
-        Place place = placeParam.toDO();
         Event event = this.paramToDomain(user, eventParam);
         List<String> contentFileUrls = fileUrls != null
                 ? Arrays.asList(fileUrls)
@@ -106,11 +104,15 @@ public class EventsApi {
                 ? Arrays.asList(files)
                 : Collections.emptyList();
 
-        event.setPlaceId(
-            place.getId() != null
-                ? place.getId()
-                : placeService.save(place).map(Place::getId).orElseThrow(InternalError::new)
-        );
+        if(placeJson != null) {
+            PlaceParam placeParam = PlaceParam.fromJson(placeJson);
+            Place place = placeParam.toDO();
+            event.setPlaceId(
+                    place.getId() != null
+                            ? place.getId()
+                            : placeService.save(place).map(Place::getId).orElseThrow(InternalError::new)
+            );
+        }
 
         //todo: delete files which were previously used and are replaced
         if (thumbnail != null) {
@@ -125,6 +127,8 @@ public class EventsApi {
         }
 
         this.eventService.update(event);
+// todo: in order to have application state reflecting the changes this should return updated event object
+// return ResponseEntity.ok(this.eventResponse(event));
         return ResponseEntity.noContent().build();
     }
 

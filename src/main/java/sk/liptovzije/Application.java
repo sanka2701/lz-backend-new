@@ -11,7 +11,6 @@ import sk.liptovzije.core.service.storage.IStorageService;
 @SpringBootApplication
 @EnableAutoConfiguration
 //@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@ComponentScan
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

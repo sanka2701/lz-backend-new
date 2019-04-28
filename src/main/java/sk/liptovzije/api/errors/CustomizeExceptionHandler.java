@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity handleInvalidRequest(RuntimeException e, WebRequest request)throws IOException {
+    public ResponseEntity handleInvalidRequest(RuntimeException e, WebRequest request) throws IOException {
         InvalidRequestException ire = (InvalidRequestException) e;
 
         List<FieldErrorResource> errorResources = ire.getErrors().getFieldErrors().stream().map(fieldError ->
