@@ -8,10 +8,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.application.user.UserData;
 import sk.liptovzije.core.service.encrypt.IEncryptService;
@@ -28,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -58,10 +56,27 @@ public class UsersApi {
         return ResponseEntity.status(201).body(userResponse(userData, jwtService.toToken(user)));
     }
 
-    @PostMapping(path = "/filter")
-    public ResponseEntity filterUsers() {
-        List<User> userList = userService.filter();
+    @PostMapping("/update")
+    public ResponseEntity updateUser(/*@Valid*/ @RequestBody UpdateParam param, BindingResult bindingResult) {
+        User user = userService.findById(param.getId()).orElseThrow(ResourceNotFoundException::new);
+        user.setRole(param.getRole());
+        userService.update(user);
+
+        return ResponseEntity.ok(userResponse(user));
+    }
+
+    @GetMapping
+    public ResponseEntity listUsers() {
+        List<User> userList = userService.getAll();
         return ResponseEntity.ok(this.userResponse(userList));
+    }
+
+    @GetMapping("/id")
+    public ResponseEntity getUserById(@RequestParam("id") long id) {
+        Map user = userService.findById(id)
+                .map(this::userResponse)
+                .orElseThrow(ResourceNotFoundException::new);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping(path = "/login")
@@ -95,6 +110,10 @@ public class UsersApi {
         }
     }
 
+    private Map<String, List> userResponse(User user) {
+        return userResponse(Stream.of(user).collect(Collectors.toList()));
+    }
+
     private Map<String, List> userResponse(List<User> users) {
         List<UserData> params = users.stream()
                 .map(User::toData)
@@ -123,14 +142,24 @@ class LoginParam {
     private String password;
 }
 
+// todo: tune parameters for registration, update and DTO
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 class RegisterParam {
-    @Email(message = "should be an email")
-    private String email;
+//    @Email(message = "should be an email")
+    protected String email;
     @NotBlank(message = "can't be empty")
-    private String username;
-    @NotBlank(message = "can't be empty")
-    private String password;
+    protected String username;
+//    @NotBlank(message = "can't be empty")
+    protected String password;
+}
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class UpdateParam extends RegisterParam {
+    private Long id;
+    private String role;
 }

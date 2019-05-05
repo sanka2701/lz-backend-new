@@ -10,7 +10,7 @@ public interface IUserService {
 
     Optional<User> update(User user);
 
-    List<User> filter();
+    List<User> getAll();
 
     Optional<User> findById(Long id);
 

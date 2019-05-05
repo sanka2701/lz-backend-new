@@ -30,16 +30,18 @@ public class UserService implements IUserService {
 
     @Override
     public Optional<User> update(User updatedUser) {
-//        todo: test if works without specifying all the columns, probably remove the return
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QUser user = QUser.user;
-        query.update(user).where(user.id.eq(updatedUser.getId())).execute();
+        query.update(user)
+                .where(user.id.eq(updatedUser.getId()))
+                .set(user.role, updatedUser.getRole())
+                .execute();
 
         return Optional.empty();
     }
 
     @Override
-    public List<User> filter() {
+    public List<User> getAll() {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QUser user = QUser.user;
         return query.selectFrom(user).fetch();
