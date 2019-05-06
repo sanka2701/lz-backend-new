@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sk.liptovzije.application.place.Place;
 import sk.liptovzije.core.service.place.IPlaceService;
+import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -63,13 +64,23 @@ public class PlacesApi {
 
     @DeleteMapping
     public ResponseEntity deletePlace(@RequestParam("id") Long id) {
+        // todo: replace all events using this place to use some other
         this.placeService.delete(id);
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(path = "/update", method = POST)
-    public ResponseEntity updatePlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
-        return null;
+    public ResponseEntity updatePlace(@Valid @RequestBody PlaceParam placeParam, BindingResult bindingResult) {
+        Place updatedPlace = placeParam.toDO();
+        Place currentPlace = placeService.getById(updatedPlace.getId()).orElseThrow(ResourceNotFoundException::new);
+
+        currentPlace.setLabel(updatedPlace.getLabel());
+        currentPlace.setAddress(updatedPlace.getAddress());
+        currentPlace.setLongitude(updatedPlace.getLongitude());
+        currentPlace.setLatitude(updatedPlace.getLatitude());
+
+        placeService.update(currentPlace);
+        return ResponseEntity.ok(currentPlace);
     }
 
     private Map<String, List> placeResponse(Place place){

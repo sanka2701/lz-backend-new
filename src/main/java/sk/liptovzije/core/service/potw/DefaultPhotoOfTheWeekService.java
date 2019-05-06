@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Service
 public class DefaultPhotoOfTheWeekService implements PhotoOfTheWeekService {
-
+//todo: create sql data table and rewrite using database
     List<WeeklyPhoto> repo;
 
     public DefaultPhotoOfTheWeekService() {

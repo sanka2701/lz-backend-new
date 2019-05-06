@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,6 @@ import sk.liptovzije.application.photo.WeeklyPhoto;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.file.IFileService;
-import sk.liptovzije.core.service.storage.IStorageService;
 import sk.liptovzije.core.service.potw.PhotoOfTheWeekService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
@@ -50,11 +50,10 @@ public class PotwApi {
                                             @RequestParam("file") MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
-        WeeklyPhoto addedPhoto = paramToWeeklyPhoto(param);
+        WeeklyPhoto addedPhoto = paramToDomain(param);
 
         File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
-        String url = pathBuilder.toServerUrl(potwFile.getPath());
-        addedPhoto.setPhotoUrl(url);
+        addedPhoto.setPhoto(potwFile);
         addedPhoto.setOwnerId(user.getId());
 
         return potwService.save(addedPhoto)
@@ -67,12 +66,12 @@ public class PotwApi {
                                             @RequestParam(name = "file", required = false) MultipartFile photoFile,
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
-        WeeklyPhoto updatedPhoto = paramToWeeklyPhoto(param);
+        WeeklyPhoto updatedPhoto = paramToDomain(param);
 
+        // todo: delete previously used file
         if(photoFile != null) {
             File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
-            String url = pathBuilder.toServerUrl(potwFile.getPath());
-            updatedPhoto.setPhotoUrl(url);
+            updatedPhoto.setPhoto(potwFile);
         }
         return potwService.update(updatedPhoto)
                 .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))
@@ -98,15 +97,31 @@ public class PotwApi {
         return ResponseEntity.ok(this.photoListResponse(photos));
     }
 
-    private WeeklyPhoto paramToWeeklyPhoto(WeeklyPhotoParam param) {
-        return new WeeklyPhoto(
-                param.getId(),
-                param.getOwnerId(),
-                param.getTitle(),
-                param.getDescription(),
-                param.getPhotoUrl(),
-                new LocalDate(param.getDateAdded())
-        );
+    private WeeklyPhotoParam domainToParam(WeeklyPhoto photo) {
+        WeeklyPhotoParam param = new WeeklyPhotoParam();
+
+        param.setId(photo.getId());
+        param.setOwnerId(photo.getOwnerId());
+        param.setTitle(photo.getTitle());
+        param.setDescription(photo.getDescription());
+        param.setPhotoUrl(pathBuilder.toServerUrl(photo.getPhoto().getPath()));
+        param.setDateAdded(photo.getDateAdded().toDate().getTime());
+
+        return param;
+    }
+
+    private WeeklyPhoto paramToDomain(WeeklyPhotoParam param) {
+        WeeklyPhoto photo = new WeeklyPhoto();
+
+        photo.setId(param.getId());
+        photo.setOwnerId(param.getOwnerId());
+        photo.setTitle(param.getTitle());
+        photo.setDescription(param.getDescription());
+//        todo: think of an elegant way to set up photo here
+//        photo.setPhoto(param.getPhotoUrl());
+        photo.setDateAdded(new LocalDate(param.getDateAdded()));
+
+        return photo;
     }
 
     private Map<String, List> photoResponse(WeeklyPhoto photo) {
@@ -115,7 +130,7 @@ public class PotwApi {
 
     private Map<String, List> photoListResponse(List<WeeklyPhoto> photos){
         List<WeeklyPhotoParam> params = photos.stream()
-                .map(WeeklyPhotoParam::new)
+                .map(this::domainToParam)
                 .collect(Collectors.toList());
 
         return new HashMap<String, List>() {{
@@ -125,6 +140,7 @@ public class PotwApi {
 }
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 class WeeklyPhotoParam {
@@ -134,15 +150,6 @@ class WeeklyPhotoParam {
     private String description;
     private String photoUrl;
     private Long dateAdded;
-
-    WeeklyPhotoParam(WeeklyPhoto photo) {
-        this.id = photo.getId();
-        this.ownerId = photo.getOwnerId();
-        this.title = photo.getTitle();
-        this.description = photo.getDescription();
-        this.photoUrl = photo.getPhotoUrl();
-        this.dateAdded = photo.getDateAdded().toDate().getTime();
-    }
 
     static WeeklyPhotoParam fromJson(String json) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();

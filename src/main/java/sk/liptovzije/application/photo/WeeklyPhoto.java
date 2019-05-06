@@ -5,12 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joda.time.LocalDate;
+import sk.liptovzije.application.file.File;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -33,8 +30,9 @@ public class WeeklyPhoto {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "photo_url")
-    private String photoUrl;
+    @OneToOne
+    @JoinColumn(name = "thumbnail")
+    private File photo;
 
     @Column(name = "date_added")
     private LocalDate dateAdded;
