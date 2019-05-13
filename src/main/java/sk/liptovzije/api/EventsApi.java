@@ -84,6 +84,7 @@ public class EventsApi {
         event.setStartTime(updatedEvent.getStartTime());
         event.setEndDate(updatedEvent.getEndDate());
         event.setEndTime(updatedEvent.getEndTime());
+        event.setApproved(updatedEvent.getApproved());
 
         this.eventService.update(event);
 
