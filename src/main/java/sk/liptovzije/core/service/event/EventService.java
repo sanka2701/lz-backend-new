@@ -41,32 +41,7 @@ public class EventService implements IEventService {
     @Override
     @Transactional
     public void update(Event event) {
-        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QEvent qEvent = QEvent.event;
-        HibernateUpdateClause update = query.update(qEvent).where(qEvent.id.eq(event.getId()));
-
-        if(event.getThumbnail() != null) {
-            update.set(qEvent.thumbnail, event.getThumbnail());
-        }
-        //todo: content_files are not updating
-        if(event.getFiles() != null) {
-            update.set(qEvent.files, event.getFiles());
-        }
-        //todo: crashing when changed
-//        if(event.getTags() != null) {
-//            update.set(qEvent.tags, event.getTags());
-//        }
-
-        update
-        .set(qEvent.placeId, event.getPlaceId())
-        .set(qEvent.content, event.getContent())
-        .set(qEvent.title, event.getTitle())
-        .set(qEvent.startDate, event.getStartDate())
-        .set(qEvent.endDate, event.getEndDate())
-        .set(qEvent.startTime, event.getStartTime())
-        .set(qEvent.endTime, event.getEndTime())
-        .set(qEvent.approved, event.getApproved())
-        .execute();
+        entityManager.unwrap(Session.class).update(event);
     }
 
     @Override

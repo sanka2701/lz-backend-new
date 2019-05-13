@@ -15,6 +15,8 @@ public interface ITagService {
 
     Optional<Tag> getById(long id);
 
+    List<Tag> getById(List<Long> ids);
+
     Optional<Tag> getByLabel(String label);
 
     List<Tag> getAll();

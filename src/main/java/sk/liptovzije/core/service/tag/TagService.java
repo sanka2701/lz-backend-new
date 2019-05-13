@@ -60,6 +60,15 @@ public class TagService implements ITagService {
     }
 
     @Override
+    public List<Tag> getById(List<Long> ids) {
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QTag tag = QTag.tag;
+        return query.selectFrom(tag)
+                .where(tag.id.in(ids))
+                .fetch();
+    }
+
+    @Override
     public Optional<Tag> getByLabel(String label) {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QTag tag = QTag.tag;

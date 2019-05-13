@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.event.Event;
 import sk.liptovzije.application.file.File;
-import sk.liptovzije.application.place.Place;
+import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.authorization.IAuthorizationService;
 import sk.liptovzije.core.service.event.IEventService;
 import sk.liptovzije.core.service.file.IFileService;
-import sk.liptovzije.core.service.place.IPlaceService;
+import sk.liptovzije.core.service.tag.ITagService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
 import java.io.IOException;
@@ -31,21 +31,21 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping(path = "/events")
 public class EventsApi {
+    private ITagService tagService;
     private IEventService eventService;
-    private IPlaceService placeService;
     private IFileService fileService;
     private IFileUrlBuilder pathBuilder;
     private IAuthorizationService authorizationService;
 
     @Autowired
     public EventsApi(
+            ITagService tagService,
             IEventService eventService,
-            IPlaceService placeService,
             IFileService fileService,
             IFileUrlBuilder pathBuilder,
             IAuthorizationService authorizationService) {
+        this.tagService   = tagService;
         this.eventService = eventService;
-        this.placeService = placeService;
         this.fileService  = fileService;
         this.pathBuilder  = pathBuilder;
         this.authorizationService = authorizationService;
@@ -53,35 +53,11 @@ public class EventsApi {
 
     @PostMapping
     public ResponseEntity createEvent(@RequestParam("event") String eventJson,
-                                      @RequestParam("place") String placeJson,
                                       @RequestParam("thumbnail") MultipartFile thumbnail,
                                       @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
-        EventParam newEvent = EventParam.fromJson(eventJson);
-        PlaceParam newPlace = PlaceParam.fromJson(placeJson);
-        List<String> contentFileUrls = fileUrls != null
-                ? Arrays.asList(fileUrls)
-                : Collections.emptyList();
-        List<MultipartFile> urlFiles = files != null
-                ? Arrays.asList(files)
-                : Collections.emptyList();
-        Event event = this.paramToDomain(user, newEvent);
-        Place place = newPlace.toDO();
-
-        File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
-        List<File> contentFiles = fileService.save(urlFiles);
-        Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
-
-        long placeId = (
-                place.getId() != null
-                    ? place
-                    : placeService.save(place).orElseThrow(InternalError::new)
-                ).getId();
-        event.setPlaceId(placeId);
-        event.setThumbnail(thumbnailFile);
-        event.setFiles(new HashSet<>(contentFiles));
-        event.setContent(pathBuilder.replaceUrls(newEvent.getContent(), urlMap));
+        Event event = resolveEventDependencies(eventJson, thumbnail, fileUrls, files, user);
 
         return this.eventService.create(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(storedEvent)))
@@ -90,46 +66,29 @@ public class EventsApi {
 
     @PostMapping("/update")
     public ResponseEntity updateEvent(@RequestParam("event") String eventJson,
-                                      @RequestParam(value = "place", required = false) String placeJson,
                                       @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
                                       @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
-        EventParam eventParam = EventParam.fromJson(eventJson);
-        Event event = this.paramToDomain(user, eventParam);
-        List<String> contentFileUrls = fileUrls != null
-                ? Arrays.asList(fileUrls)
-                : Collections.emptyList();
-        List<MultipartFile> urlFiles = files != null
-                ? Arrays.asList(files)
-                : Collections.emptyList();
+        Event updatedEvent = resolveEventDependencies(eventJson, thumbnail, fileUrls, files, user);
+        Event event = eventService.getById(updatedEvent.getId()).orElseThrow(ResourceNotFoundException::new);
 
-        if(placeJson != null) {
-            PlaceParam placeParam = PlaceParam.fromJson(placeJson);
-            Place place = placeParam.toDO();
-            event.setPlaceId(
-                    place.getId() != null
-                            ? place.getId()
-                            : placeService.save(place).map(Place::getId).orElseThrow(InternalError::new)
-            );
+        if(updatedEvent.getThumbnail() != null) {
+            event.setThumbnail(updatedEvent.getThumbnail());
         }
-
-        //todo: delete files which were previously used and are replaced
-        if (thumbnail != null) {
-            File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
-            event.setThumbnail(thumbnailFile);
-        }
-
-        if(contentFileUrls.size() > 0) {
-            List<File> contentFiles = fileService.save(urlFiles);
-            Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
-            event.setContent(pathBuilder.replaceUrls(eventParam.getContent(), urlMap));
-        }
+        event.setPlaceId(updatedEvent.getPlaceId());
+        event.setTags(updatedEvent.getTags());
+        event.setTitle(updatedEvent.getTitle());
+        event.setContent(updatedEvent.getContent());
+        event.setStartDate(updatedEvent.getStartDate());
+        event.setStartTime(updatedEvent.getStartTime());
+        event.setEndDate(updatedEvent.getEndDate());
+        event.setEndTime(updatedEvent.getEndTime());
 
         this.eventService.update(event);
-// todo: in order to have application state reflecting the changes this should return updated event object
-// return ResponseEntity.ok(this.eventResponse(event));
-        return ResponseEntity.noContent().build();
+
+        // todo: delete unused files after update
+        return ResponseEntity.ok(eventResponse(event));
     }
 
     @GetMapping()
@@ -145,10 +104,37 @@ public class EventsApi {
         return ResponseEntity.ok(eventListResponse(events));
     }
 
+    private Event resolveEventDependencies(String eventJson,
+                                           MultipartFile thumbnail,
+                                           String[] fileUrls,
+                                           MultipartFile[] files,
+                                           User user) throws IOException {
+        EventParam eventParam = EventParam.fromJson(eventJson);
+        Event event = this.paramToDomain(user, eventParam);
+
+        if (thumbnail != null) {
+            File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
+            event.setThumbnail(thumbnailFile);
+        }
+
+        if(fileUrls != null && files != null) {
+            List<String> contentFileUrls = Arrays.asList(fileUrls);
+            List<MultipartFile> urlFiles = Arrays.asList(files);
+            List<File> contentFiles = fileService.save(urlFiles);
+            Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
+            event.setContent(pathBuilder.replaceUrls(eventParam.getContent(), urlMap));
+        }
+
+        return event;
+    }
+
     private Event paramToDomain(User owner, EventParam param) {
+        List<Long> domainTags =  Arrays.stream(param.getTags()).collect(Collectors.toList());
+        Set tags = new HashSet<>(this.tagService.getById(domainTags));
+
         return new Event.Builder(owner.getId(), param.getTitle(), param.getContent())
                 .id(param.getId())
-                .tags(Arrays.stream(param.getTags()).map(TagParam::toDo).collect(Collectors.toSet()))
+                .tags(tags)
                 .placeId(param.getPlaceId())
                 .startDate(param.getStartDate())
                 .startTime(param.getStartTime())
@@ -158,12 +144,11 @@ public class EventsApi {
                 .build();
     }
 
-    //todo: transfer just tag ids
     private EventParam domainToParam(Event domainEvent) {
         EventParam param = new EventParam();
 
         param.setId(domainEvent.getId());
-        param.setTags(domainEvent.getTags().stream().map(TagParam::new).toArray(TagParam[]::new));
+        param.setTags(domainEvent.getTags().stream().map(Tag::getId).toArray(Long[]::new));
         param.setPlaceId(domainEvent.getPlaceId());
         param.setOwnerId(domainEvent.getOwnerId());
         param.setTitle(domainEvent.getTitle());
@@ -201,7 +186,7 @@ class EventParam {
     private Long id;
     private Long placeId;
     private Long ownerId;
-    private TagParam[] tags;
+    private Long[] tags;
     @NotBlank(message = "can't be empty")
     private String title;
     @NotBlank(message = "can't be empty")

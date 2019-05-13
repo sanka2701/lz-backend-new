@@ -47,12 +47,6 @@ public class PlacesApi {
         return ResponseEntity.ok(placeListResponse(listedPlaces));
     }
 
-    @GetMapping()
-    public ResponseEntity listPlacesByName(@RequestParam("subname") String subname) {
-        List<Place> listedPlaces = this.placeService.getBySubstring(subname);
-        return ResponseEntity.ok(placeListResponse(listedPlaces));
-    }
-
     @PostMapping
     public ResponseEntity createPlace(@Valid @RequestBody PlaceParam newPlace, BindingResult bindingResult) {
         //todo: check binding

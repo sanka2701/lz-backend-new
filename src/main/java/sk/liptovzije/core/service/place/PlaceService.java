@@ -32,15 +32,7 @@ public class PlaceService implements IPlaceService {
 
     @Override
     public void  update(Place place) {
-        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QPlace qPlace = QPlace.place;
-        query.update(qPlace)
-                .where(qPlace.id.eq(place.getId()))
-                .set(qPlace.label, place.getLabel())
-                .set(qPlace.address, place.getAddress())
-                .set(qPlace.latitude, place.getLatitude())
-                .set(qPlace.longitude, place.getLongitude())
-                .execute();
+        entityManager.unwrap(Session.class).update(place);
     }
 
     @Override
@@ -59,15 +51,6 @@ public class PlaceService implements IPlaceService {
                 .fetchOne();
 
         return Optional.ofNullable(result);
-    }
-
-    @Override
-    public List<Place> getBySubstring(String subName) {
-        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
-        QPlace place = QPlace.place;
-        return query.selectFrom(place)
-                .where(place.label.like(Expressions.asString("%").concat(subName).concat("%")))
-                .fetch();
     }
 
     @Override
