@@ -20,6 +20,7 @@ import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.authorization.IAuthorizationService;
 import sk.liptovzije.core.service.event.IEventService;
 import sk.liptovzije.core.service.file.IFileService;
+import sk.liptovzije.core.service.post.IPostService;
 import sk.liptovzije.core.service.tag.ITagService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
@@ -33,7 +34,7 @@ import java.util.stream.Stream;
 public class EventsApi {
     private ITagService tagService;
     private IEventService eventService;
-    private IFileService fileService;
+    private IPostService postService;
     private IFileUrlBuilder pathBuilder;
     private IAuthorizationService authorizationService;
 
@@ -41,12 +42,12 @@ public class EventsApi {
     public EventsApi(
             ITagService tagService,
             IEventService eventService,
-            IFileService fileService,
+            IPostService postService,
             IFileUrlBuilder pathBuilder,
             IAuthorizationService authorizationService) {
         this.tagService   = tagService;
         this.eventService = eventService;
-        this.fileService  = fileService;
+        this.postService  = postService;
         this.pathBuilder  = pathBuilder;
         this.authorizationService = authorizationService;
     }
@@ -57,7 +58,9 @@ public class EventsApi {
                                       @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
-        Event event = resolveEventDependencies(eventJson, thumbnail, fileUrls, files, user);
+        EventParam eventParam = EventParam.fromJson(eventJson);
+        Event event = this.paramToDomain(user, eventParam);
+        postService.resolveFileDependencies(event, thumbnail, fileUrls, files);
 
         return this.eventService.create(event)
                 .map(storedEvent -> ResponseEntity.ok(this.eventResponse(storedEvent)))
@@ -70,7 +73,10 @@ public class EventsApi {
                                       @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
-        Event updatedEvent = resolveEventDependencies(eventJson, thumbnail, fileUrls, files, user);
+        EventParam eventParam = EventParam.fromJson(eventJson);
+        Event updatedEvent = this.paramToDomain(user, eventParam);
+        postService.resolveFileDependencies(updatedEvent, thumbnail, fileUrls, files);
+
         Event event = eventService.getById(updatedEvent.getId()).orElseThrow(ResourceNotFoundException::new);
 
         if(updatedEvent.getThumbnail() != null) {
@@ -93,40 +99,16 @@ public class EventsApi {
     }
 
     @GetMapping()
-    public ResponseEntity getEvent(@RequestParam("id") long id) {
+    public ResponseEntity getEventById(@RequestParam("id") long id) {
         return this.eventService.getById(id)
                 .map(event -> ResponseEntity.ok(this.eventResponse(event)))
                 .orElseThrow(ResourceNotFoundException::new);
     }
 
     @GetMapping("/all")
-    public ResponseEntity filterEvents() {
+    public ResponseEntity getAllEvents() {
         List<Event> events = this.eventService.getAll();
         return ResponseEntity.ok(eventListResponse(events));
-    }
-
-    private Event resolveEventDependencies(String eventJson,
-                                           MultipartFile thumbnail,
-                                           String[] fileUrls,
-                                           MultipartFile[] files,
-                                           User user) throws IOException {
-        EventParam eventParam = EventParam.fromJson(eventJson);
-        Event event = this.paramToDomain(user, eventParam);
-
-        if (thumbnail != null) {
-            File thumbnailFile = fileService.save(thumbnail).orElseThrow(InternalError::new);
-            event.setThumbnail(thumbnailFile);
-        }
-
-        if(fileUrls != null && files != null) {
-            List<String> contentFileUrls = Arrays.asList(fileUrls);
-            List<MultipartFile> urlFiles = Arrays.asList(files);
-            List<File> contentFiles = fileService.save(urlFiles);
-            Map<String, File> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, contentFiles);
-            event.setContent(pathBuilder.replaceUrls(eventParam.getContent(), urlMap));
-        }
-
-        return event;
     }
 
     private Event paramToDomain(User owner, EventParam param) {

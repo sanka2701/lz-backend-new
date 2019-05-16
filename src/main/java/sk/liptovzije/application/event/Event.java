@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import sk.liptovzije.application.file.File;
+import sk.liptovzije.application.post.Post;
 import sk.liptovzije.application.tag.Tag;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 import sk.liptovzije.utils.LocalTimePersistenceConverter;
@@ -19,28 +20,9 @@ import java.util.Set;
 @Setter
 @EqualsAndHashCode
 @Table(name = "event")
-public class Event implements Serializable {
-
-    @Id
-    @GeneratedValue
-    @Column(name = "event_id")
-    private Long id;
-
+public class Event extends Post implements Serializable {
     @Column(name = "place_id")
     private Long placeId;
-
-    @Column(name = "owner_id")
-    private Long ownerId;
-
-    @Column(name = "content")
-    private String content;
-
-    @Column(name = "heading")
-    private String title;
-
-    @Convert(converter = LocalDatePersistenceConverter.class)
-    @Column(name = "date_added")
-    private LocalDate dateAdded;
 
     @Convert(converter = LocalDatePersistenceConverter.class)
     @Column(name = "start_date")
@@ -58,25 +40,11 @@ public class Event implements Serializable {
     @Column(name = "end_time")
     private LocalTime endTime;
 
-    @Column(name = "approved")
-    private Boolean approved;
-
-    @OneToOne
-    @JoinColumn(name = "thumbnail")
-    private File thumbnail;
-
-    @OneToMany(cascade=CascadeType.ALL)
-    @JoinTable(
-            name = "content_file",
-            joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "file_id")
-    )
-    private Set<File> files;
-
+//    fixme: this wont work as there are two separate tables created for each subclass (event and article)
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "event_tag",
-            joinColumns = @JoinColumn(name = "event_id"),
+            joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;

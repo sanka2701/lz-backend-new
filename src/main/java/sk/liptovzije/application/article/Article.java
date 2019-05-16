@@ -3,6 +3,7 @@ package sk.liptovzije.application.article;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import sk.liptovzije.application.file.File;
 import sk.liptovzije.application.post.Post;
 
 import javax.persistence.Entity;
@@ -13,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "articles")
+@Table(name = "article")
 public class Article extends Post {
 
     private Article() {
@@ -21,15 +22,11 @@ public class Article extends Post {
     }
 
     public static class Builder {
-
         private Long id;
         private Long ownerId;
         private String title;
-        private String thumbnail;
+        private File thumbnail;
         private String content;
-
-        // todo: remove, just for offline testing purposes
-        private static AtomicInteger idGenerator=new AtomicInteger();
 
         public Builder(long ownerId, String title, String content) {
             this.ownerId = ownerId;
@@ -37,7 +34,7 @@ public class Article extends Post {
             this.content = content;
         }
 
-        public Builder thumbnail(String thumbnail){
+        public Builder thumbnail(File thumbnail){
             this.thumbnail = thumbnail;
             return this;
         }
@@ -50,10 +47,10 @@ public class Article extends Post {
         public Article build() {
             Article article = new Article();
 
-            article.setId(id != null ? id :(long) idGenerator.incrementAndGet());
+            article.setId(id);
             article.setOwnerId(ownerId);
             article.setTitle(title);
-            article.setThumbnail(thumbnail);
+//            article.setThumbnail(thumbnail);
             article.setContent(content);
 
             return article;

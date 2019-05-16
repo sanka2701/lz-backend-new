@@ -68,14 +68,19 @@ public class PotwApi {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto updatedPhoto = paramToDomain(param);
 
+        WeeklyPhoto photo = potwService.getById(updatedPhoto.getId()).orElseThrow(ResourceNotFoundException::new);
         // todo: delete previously used file
         if(photoFile != null) {
             File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
             updatedPhoto.setPhoto(potwFile);
+            photo.setPhoto(potwFile);
         }
-        return potwService.update(updatedPhoto)
-                .map(photo -> ResponseEntity.ok(this.photoResponse(photo)))
-                .orElseThrow(InternalError::new);
+        photo.setDescription(updatedPhoto.getDescription());
+        photo.setTitle(updatedPhoto.getTitle());
+
+        potwService.update(photo);
+
+        return ResponseEntity.ok(this.photoResponse(updatedPhoto));
     }
 
     @DeleteMapping

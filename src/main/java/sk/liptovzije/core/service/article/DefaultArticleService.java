@@ -1,81 +1,62 @@
 package sk.liptovzije.core.service.article;
 
-import me.xdrop.fuzzywuzzy.FuzzySearch;
-import org.apache.commons.lang3.StringUtils;
+import com.querydsl.jpa.hibernate.HibernateQueryFactory;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.article.Article;
-import sk.liptovzije.application.article.ArticleFilter;
+import sk.liptovzije.application.article.QArticle;
 
-import java.util.HashSet;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+//todo: remove fuzzy search from maven dependencies
 
 @Service
 public class DefaultArticleService implements ArticleService{
-    
-    private Set<Article> articleRepo = new HashSet<>();
-    private int FUZZY_SCORE_TRESHOLD = 85;
-    
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
+    @Transactional
     public Optional<Article> create(Article article) {
-        articleRepo.add(article);
+        entityManager.unwrap(Session.class).save(article);
         return Optional.of(article);
     }
 
     @Override
-    public Optional<Article> update(Article article) {
-        this.articleRepo.stream()
-                .filter(currentArticle -> currentArticle.getId().equals(article.getId()))
-                .forEach(updatedArticle -> updatedArticle = article);
-
-        return Optional.ofNullable(article);
+    @Transactional
+    public void update(Article article) {
+        entityManager.unwrap(Session.class).update(article);
     }
 
     @Override
+    @Transactional
     public void delete(long id) {
-
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QArticle article = QArticle.article;
+        query.delete(article).where(article.id.eq(id)).execute();
     }
 
     @Override
+    @Transactional
     public Optional<Article> getById(long id) {
-        return this.articleRepo.stream()
-                .filter(article -> article.getId().equals(id))
-                .findFirst();
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QArticle article = QArticle.article;
+        Article result = query.selectFrom(article)
+                .where(article.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
-    public List<Article> getByFilter(ArticleFilter filter) {
-        return this.articleRepo.stream()
-                .filter(article -> {
-                    boolean fitsFilter = true;
-
-                    if (filter.getOwnerId() != null) {
-                        fitsFilter = fitsFilter && article.getOwnerId().equals(filter.getOwnerId());
-                    }
-
-                    if (filter.getTitle() != null) {
-                        String normalizedName  = StringUtils.stripAccents(article.getTitle()).toLowerCase();
-                        String normalizedQuery = StringUtils.stripAccents(filter.getTitle()).toLowerCase();
-                        fitsFilter = fitsFilter && (normalizedName.contains(normalizedQuery)
-                                || FuzzySearch.ratio(normalizedName, normalizedQuery) > FUZZY_SCORE_TRESHOLD);
-                    }
-
-                    if(filter.getDateAddedFrom() != null) {
-                        fitsFilter = fitsFilter &&
-                                (article.getDateAdded().isAfter(filter.getDateAddedFrom()) ||
-                                        article.getDateAdded().equals(filter.getDateAddedFrom()));
-                    }
-
-                    if(filter.getDateAddedUntil() != null) {
-                        fitsFilter = fitsFilter &&
-                                (article.getDateAdded().isBefore(filter.getDateAddedUntil()) ||
-                                        article.getDateAdded().equals(filter.getDateAddedUntil()));
-                    }
-
-                    return fitsFilter;
-                })
-                .collect(Collectors.toList());
+    @Transactional
+    public List<Article> getAll() {
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QArticle article = QArticle.article;
+        return query.selectFrom(article).fetch();
     }
 }

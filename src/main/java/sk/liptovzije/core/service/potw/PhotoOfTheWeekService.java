@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface PhotoOfTheWeekService {
     Optional<WeeklyPhoto> save(WeeklyPhoto photo);
-    Optional<WeeklyPhoto> update(WeeklyPhoto photo);
     Optional<WeeklyPhoto> getById(long id);
     List<WeeklyPhoto> getAll();
+    void update(WeeklyPhoto photo);
     void delete(long id);
 }

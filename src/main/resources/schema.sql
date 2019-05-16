@@ -33,7 +33,7 @@ CREATE TABLE tag (
 );
 
 CREATE TABLE event (
-  event_id       INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  post_id        INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
   owner_id       INTEGER NOT NULL,
   place_id       INTEGER NOT NULL,
   content        TEXT,
@@ -51,21 +51,33 @@ CREATE TABLE event (
 );
 
 CREATE TABLE event_tag (
-  event_id   INTEGER NOT NULL,
+  post_id   INTEGER NOT NULL,
   tag_id     INTEGER NOT NULL,
-  PRIMARY KEY (event_id,tag_id),
-  KEY fk_event (event_id),
+  PRIMARY KEY (post_id,tag_id),
+  KEY fk_event (post_id),
   KEY fk_tag (tag_id),
   CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES tag (tag_id),
-  CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (event_id)
+  CONSTRAINT fk_event FOREIGN KEY (post_id) REFERENCES event (post_id)
 );
-
+/*
 CREATE TABLE content_file (
-  event_id   INTEGER NOT NULL,
+  post_id   INTEGER NOT NULL,
   file_id     INTEGER NOT NULL,
-  PRIMARY KEY (event_id,file_id),
-  KEY fk_f_event (event_id),
+  PRIMARY KEY (post_id,file_id),
+  KEY fk_f_event (post_id),
   KEY fk_f_file (file_id),
   CONSTRAINT fk_f_file FOREIGN KEY (file_id) REFERENCES file (file_id),
-  CONSTRAINT fk_f_event FOREIGN KEY (event_id) REFERENCES event (event_id)
+  CONSTRAINT fk_f_event FOREIGN KEY (post_id) REFERENCES event (post_id)
 );
+*/
+CREATE TABLE article (
+    post_id        INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    owner_id       INTEGER NOT NULL,
+    content        TEXT,
+    thumbnail      INTEGER NOT NULL,
+    heading        VARCHAR(50),
+    date_added     DATE,
+    approved       BOOL DEFAULT true,
+    FOREIGN KEY (thumbnail) REFERENCES file (file_id),
+    FOREIGN KEY (owner_id) REFERENCES user (user_id)
+)

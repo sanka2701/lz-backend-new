@@ -1,7 +1,6 @@
 package sk.liptovzije.core.service.event;
 
 import com.querydsl.jpa.hibernate.HibernateQueryFactory;
-import com.querydsl.jpa.hibernate.HibernateUpdateClause;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import sk.liptovzije.application.event.Event;
@@ -59,8 +58,6 @@ public class EventService implements IEventService {
     public List<Event> getAll() {
         HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
         QEvent event = QEvent.event;
-        List<Event> result = query.selectFrom(event).fetch();
-
-        return result;
+        return query.selectFrom(event).fetch();
     }
 }

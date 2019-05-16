@@ -5,20 +5,19 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.article.Article;
-import sk.liptovzije.application.article.ArticleFilter;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.article.ArticleService;
-import sk.liptovzije.core.service.storage.IStorageService;
+import sk.liptovzije.core.service.post.IPostService;
 import sk.liptovzije.utils.exception.ResourceNotFoundException;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -31,31 +30,28 @@ import java.util.stream.Stream;
 public class ArticleApi {
 
     private ArticleService articleService;
-    private IStorageService storageService;
+    private IPostService postService;
     private IFileUrlBuilder pathBuilder;
 
     @Autowired
     public ArticleApi(ArticleService articleService,
-                      IStorageService storageService,
+                      IPostService postService,
                       IFileUrlBuilder pathBuilder) {
         this.articleService = articleService;
-        this.storageService = storageService;
+        this.postService = postService;
         this.pathBuilder = pathBuilder;
     }
 
     @PostMapping
     public ResponseEntity createArticle(@RequestParam("article") String eventJson,
                                         @RequestParam("thumbnail") MultipartFile thumbnail,
-                                        @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
+                                        @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
                                         @RequestParam(value = "file", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
-        Article article = this.paramToEvent(user.getId(), param);
+        Article article = this.paramToDomain(user.getId(), param);
 
-        //todo
-//        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
-//        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
-//        article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
+        postService.resolveFileDependencies(article, thumbnail, fileUrls, files);
 
         return this.articleService.create(article)
                 .map(storedArticle -> ResponseEntity.ok(this.articleResponse(storedArticle)))
@@ -69,23 +65,26 @@ public class ArticleApi {
                                         @RequestParam(value = "file", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
-        Article article = this.paramToEvent(user.getId(), param);
+        Article updatedArticle = this.paramToDomain(user.getId(), param);
+        postService.resolveFileDependencies(updatedArticle, thumbnail, contentFileUrls, files);
 
-        //todo
-//        Map<String, String> urlMap = pathBuilder.buildFileUrlMap(contentFileUrls, files);
-//        article.setContent(pathBuilder.replaceUrls(article.getContent(), urlMap));
-//        if(thumbnail != null) {
-//            article.setThumbnail(pathBuilder.toServerUrl(storageService.store(thumbnail)));
-//        }
+        Article article = articleService.getById(updatedArticle.getId()).orElseThrow(ResourceNotFoundException::new);
 
-        return this.articleService.update(article)
-                .map(storedEvent -> ResponseEntity.ok(this.articleResponse(article)))
-                .orElseThrow(ResourceNotFoundException::new);
+        if(updatedArticle.getThumbnail() != null) {
+            article.setThumbnail(updatedArticle.getThumbnail());
+        }
+        article.setContent(updatedArticle.getContent());
+        article.setTitle(updatedArticle.getTitle());
+        article.setFiles(updatedArticle.getFiles());
+
+        this.articleService.update(article);
+//todo: remove unused files
+        return ResponseEntity.ok(this.articleResponse(article));
     }
 
-    @PostMapping(path = "/filter")
-    public ResponseEntity filterArticles(@Valid @RequestBody ArticleFilter filter) {
-        List<Article> articles = this.articleService.getByFilter(filter);
+    @GetMapping(path = "/all")
+    public ResponseEntity getAllArticles() {
+        List<Article> articles = this.articleService.getAll();
         return ResponseEntity.ok(articleListResponse(articles));
     }
 
@@ -96,16 +95,28 @@ public class ArticleApi {
     }
 
     @GetMapping
-    public ResponseEntity getArticle(@RequestParam("id") long id) {
+    public ResponseEntity getArticleById(@RequestParam("id") long id) {
         return this.articleService.getById(id)
                 .map(article -> ResponseEntity.ok(this.articleResponse(article)))
                 .orElseThrow(ResourceNotFoundException::new);
     }
 
-    private Article paramToEvent(Long userId, ArticleParam param) {
+    private ArticleParam domainToParam(Article domainArticle) {
+        ArticleParam param = new ArticleParam();
+
+        param.setId        (domainArticle.getId());
+        param.setOwnerId   (domainArticle.getOwnerId());
+        param.setTitle     (domainArticle.getTitle());
+        param.setContent   (domainArticle.getContent());
+        param.setThumbnail (pathBuilder.toServerUrl(domainArticle.getThumbnail().getPath()));
+        param.setDateAdded (domainArticle.getDateAdded().toDate().getTime());
+
+        return param;
+    }
+
+    private Article paramToDomain(Long userId, ArticleParam param) {
         return new Article.Builder(userId, param.getTitle(), param.getContent())
                 .id(param.getId())
-                .thumbnail(param.getThumbnail())
                 .build();
     }
 
@@ -115,7 +126,7 @@ public class ArticleApi {
 
     private Map<String, List> articleListResponse(List<Article> articles){
         List<ArticleParam> params = articles.stream()
-                .map(ArticleParam::new)
+                .map(this::domainToParam)
                 .collect(Collectors.toList());
 
         return new HashMap<String, List>() {{
@@ -125,6 +136,7 @@ public class ArticleApi {
 }
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 class ArticleParam {
@@ -139,14 +151,5 @@ class ArticleParam {
         ObjectMapper objectMapper = new ObjectMapper();
         TypeFactory typeFactory = objectMapper.getTypeFactory();
         return objectMapper.readValue(json, typeFactory.constructType(ArticleParam.class));
-    }
-
-    public ArticleParam(Article domainArticle) {
-        this.id        = domainArticle.getId();
-        this.ownerId   = domainArticle.getOwnerId();
-        this.title     = domainArticle.getTitle();
-        this.content   = domainArticle.getContent();
-        this.thumbnail = domainArticle.getThumbnail();
-        this.dateAdded = domainArticle.getDateAdded().toDate().getTime();
     }
 }
