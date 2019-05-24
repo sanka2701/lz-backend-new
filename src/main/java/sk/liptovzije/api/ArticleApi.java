@@ -48,7 +48,7 @@ public class ArticleApi {
     public ResponseEntity createArticle(@RequestParam("article") String eventJson,
                                         @RequestParam("thumbnail") MultipartFile thumbnail,
                                         @RequestParam(value = "fileUrls", required = false) String[] fileUrls,
-                                        @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                        @RequestParam(value = "files", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article article = this.paramToDomain(user.getId(), param);
@@ -64,7 +64,7 @@ public class ArticleApi {
     public ResponseEntity updateArticle(@RequestParam("article") String eventJson,
                                         @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
                                         @RequestParam(value = "fileUrls", required = false) String[] contentFileUrls,
-                                        @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                        @RequestParam(value = "files", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
         Article updatedArticle  = this.paramToDomain(user.getId(), param);
