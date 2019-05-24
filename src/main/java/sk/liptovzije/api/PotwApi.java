@@ -67,11 +67,11 @@ public class PotwApi {
                                             @AuthenticationPrincipal User user) throws IOException {
         WeeklyPhotoParam param = WeeklyPhotoParam.fromJson(photoJson);
         WeeklyPhoto updatedPhoto = paramToDomain(param);
-
         WeeklyPhoto photo = potwService.getById(updatedPhoto.getId()).orElseThrow(ResourceNotFoundException::new);
-        // todo: delete previously used file
+
         if(photoFile != null) {
             File potwFile = fileService.save(photoFile).orElseThrow(InternalError::new);
+            potwService.delete(photo.getPhoto().getId());
             updatedPhoto.setPhoto(potwFile);
             photo.setPhoto(potwFile);
         }

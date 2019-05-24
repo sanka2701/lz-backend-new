@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sk.liptovzije.application.article.Article;
+import sk.liptovzije.application.file.File;
 import sk.liptovzije.application.user.User;
 import sk.liptovzije.core.service.IFileUrlBuilder;
 import sk.liptovzije.core.service.article.ArticleService;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,21 +67,22 @@ public class ArticleApi {
                                         @RequestParam(value = "file", required = false) MultipartFile[] files,
                                         @AuthenticationPrincipal User user) throws IOException {
         ArticleParam param = ArticleParam.fromJson(eventJson);
-        Article updatedArticle = this.paramToDomain(user.getId(), param);
-        postService.resolveFileDependencies(updatedArticle, thumbnail, contentFileUrls, files);
+        Article updatedArticle  = this.paramToDomain(user.getId(), param);
+        Article originalArticle =
+                this.articleService.getById(updatedArticle.getId()).orElseThrow(ResourceNotFoundException::new);
 
-        Article article = articleService.getById(updatedArticle.getId()).orElseThrow(ResourceNotFoundException::new);
+        this.postService.resolveFileDependencies(updatedArticle, thumbnail, contentFileUrls, files);
+        Set<File> toBeDeleted =
+                this.postService.updateContentFiles(originalArticle, updatedArticle);
 
-        if(updatedArticle.getThumbnail() != null) {
-            article.setThumbnail(updatedArticle.getThumbnail());
-        }
-        article.setContent(updatedArticle.getContent());
-        article.setTitle(updatedArticle.getTitle());
-        article.setFiles(updatedArticle.getFiles());
+        originalArticle.setContent(updatedArticle.getContent());
+        originalArticle.setTitle(updatedArticle.getTitle());
+        originalArticle.setFiles(updatedArticle.getFiles());
 
-        this.articleService.update(article);
-//todo: remove unused files
-        return ResponseEntity.ok(this.articleResponse(article));
+        this.articleService.update(originalArticle);
+        this.postService.removeUnusedFiles(toBeDeleted);
+
+        return ResponseEntity.ok(this.articleResponse(originalArticle));
     }
 
     @GetMapping(path = "/all")

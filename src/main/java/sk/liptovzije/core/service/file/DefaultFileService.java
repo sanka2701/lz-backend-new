@@ -65,7 +65,9 @@ public class DefaultFileService implements IFileService {
     }
 
     @Override
-    public void delete(Collection<File> files) {
-        files.forEach(this::delete);
+    public void delete(Collection<Long> ids) {
+        HibernateQueryFactory query = new HibernateQueryFactory(entityManager.unwrap(Session.class));
+        QFile file= QFile.file;
+        query.delete(file).where(file.id.in(ids)).execute();
     }
 }

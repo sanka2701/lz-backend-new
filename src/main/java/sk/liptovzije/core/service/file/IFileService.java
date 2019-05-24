@@ -11,5 +11,5 @@ public interface IFileService {
     Optional<File> save(MultipartFile file);
     List<File> save(Collection<MultipartFile> files);
     void delete(File file);
-    void delete(Collection<File> files);
+    void delete(Collection<Long> ids);
 }

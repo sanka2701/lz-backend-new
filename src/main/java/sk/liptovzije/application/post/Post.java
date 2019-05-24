@@ -8,13 +8,13 @@ import sk.liptovzije.application.file.File;
 import sk.liptovzije.utils.LocalDatePersistenceConverter;
 
 import javax.persistence.*;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
 @EqualsAndHashCode
-//@MappedSuperclass
-//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Post {
@@ -49,10 +49,14 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "file_id")
     )
-    private Set<File> files;
+    private Set<File> files = Collections.emptySet();
 
     public Post () {
         this.dateAdded = LocalDate.now();
+    }
+
+    public Set<File> getFiles() {
+        return new HashSet<>(this.files);
     }
 }
 

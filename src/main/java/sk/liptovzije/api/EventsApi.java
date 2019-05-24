@@ -74,28 +74,27 @@ public class EventsApi {
                                       @RequestParam(value = "files", required = false) MultipartFile[] files,
                                       @AuthenticationPrincipal User user) throws IOException {
         EventParam eventParam = EventParam.fromJson(eventJson);
-        Event updatedEvent = this.paramToDomain(user, eventParam);
+        Event updatedEvent  = this.paramToDomain(user, eventParam);
+        Event originalEvent = eventService.getById(updatedEvent.getId()).orElseThrow(ResourceNotFoundException::new);
+
         postService.resolveFileDependencies(updatedEvent, thumbnail, fileUrls, files);
+        Set<File> toBeDeleted =
+                this.postService.updateContentFiles(originalEvent, updatedEvent);
 
-        Event event = eventService.getById(updatedEvent.getId()).orElseThrow(ResourceNotFoundException::new);
+        originalEvent.setPlaceId(updatedEvent.getPlaceId());
+        originalEvent.setTags(updatedEvent.getTags());
+        originalEvent.setTitle(updatedEvent.getTitle());
+        originalEvent.setContent(updatedEvent.getContent());
+        originalEvent.setStartDate(updatedEvent.getStartDate());
+        originalEvent.setStartTime(updatedEvent.getStartTime());
+        originalEvent.setEndDate(updatedEvent.getEndDate());
+        originalEvent.setEndTime(updatedEvent.getEndTime());
+        originalEvent.setApproved(updatedEvent.getApproved());
 
-        if(updatedEvent.getThumbnail() != null) {
-            event.setThumbnail(updatedEvent.getThumbnail());
-        }
-        event.setPlaceId(updatedEvent.getPlaceId());
-        event.setTags(updatedEvent.getTags());
-        event.setTitle(updatedEvent.getTitle());
-        event.setContent(updatedEvent.getContent());
-        event.setStartDate(updatedEvent.getStartDate());
-        event.setStartTime(updatedEvent.getStartTime());
-        event.setEndDate(updatedEvent.getEndDate());
-        event.setEndTime(updatedEvent.getEndTime());
-        event.setApproved(updatedEvent.getApproved());
+        eventService.update(originalEvent);
+        postService.removeUnusedFiles(toBeDeleted);
 
-        this.eventService.update(event);
-
-        // todo: delete unused files after update
-        return ResponseEntity.ok(eventResponse(event));
+        return ResponseEntity.ok(eventResponse(originalEvent));
     }
 
     @GetMapping()
